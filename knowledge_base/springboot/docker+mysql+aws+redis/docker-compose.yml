@@ -1,0 +1,71 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql_container
+    restart: always
+    networks:   # ✅ 네트워크 추가
+      - app_network
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: mydb
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 30s
+      retries: 5
+      start_period: 10s
+      timeout: 10s
+
+  redis:
+    image: redis:latest
+    container_name: redis_container
+    restart: always
+    networks:   # ✅ 네트워크 추가
+      - app_network
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      retries: 5
+      start_period: 10s
+      timeout: 10s
+
+  springboot_app:
+    build: .
+    container_name: springbootapp_container
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:   # ✅ 네트워크 추가
+      - app_network
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/mydb
+      SPRING_DATASOURCE_USERNAME: user
+      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      AWS_COGNITO_CLIENT_ID: your_client_id
+      AWS_COGNITO_CLIENT_SECRET: your_client_secret
+      AWS_COGNITO_USER_POOL_ID: your_user_pool_id
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./build/libs/springbootapp-0.0.1-SNAPSHOT.jar:/app.jar
+    command: ["java", "-jar", "/app.jar"]
+
+networks:
+  app_network:
+    name: app_network
+    driver: bridge
+
+volumes:
+  mysql_data:
