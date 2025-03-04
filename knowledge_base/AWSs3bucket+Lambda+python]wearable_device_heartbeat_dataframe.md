@@ -44,6 +44,12 @@ In order to quickly process and summarize this data, the company requires 512 MB
 			'body': json.dumps(f"Processed file: {file_key}")
 		}
 
+## 코드 요약
+1. boto3 모듈을 통해 S3, EC2, Lambda, DynamoDB 등에 접속할 수 있음
+1. S3 이벤트에서 버킷 이름과 파일 키(경로) 가져오기
+2. S3에서 JSON 파일 가져오기
+3. JSON 데이터를 Pandas DataFrame으로 변환
+4. 데이터 요약 (예: 평균 심박수 계산)
 
 ## 이벤트 트리거 설정
 
