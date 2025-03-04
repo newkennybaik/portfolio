@@ -77,8 +77,6 @@ In order to quickly process and summarize this data, the company requires 512 MB
 	> }'
 
 
-## test_data.json 파일 s3로 업로드
-
 ## 테스트할 json파일 만들기
 	echo '{
 	"heart_rate": [75, 80, 72, 68, 90],
