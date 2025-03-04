@@ -48,6 +48,7 @@ In order to quickly process and summarize this data, the company requires 512 MB
 ## 이벤트 트리거 설정
 
 - lambda가 먼저 s3 버킷에 접속 할 수 있도록 정책 추가
+	
 	aws $ aws lambda add-permission \
 	>     --function-name testFunction \
 	>     --statement-id s3-event-trigger \
@@ -63,6 +64,7 @@ In order to quickly process and summarize this data, the company requires 512 MB
 
 
 - 이벤트 트리거 연관 설정 추가
+
 	aws $ aws s3api put-bucket-notification-configuration --bucket kennybaik-bucket \
 	> --notification-configuration '{
 	>   "LambdaFunctionConfigurations": [
