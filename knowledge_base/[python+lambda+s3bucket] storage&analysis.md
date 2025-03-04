@@ -49,7 +49,7 @@ In order to quickly process and summarize this data, the company requires 512 MB
 
 - lambda가 먼저 s3 버킷에 접속 할 수 있도록 정책 추가
 	
-	aws $ aws lambda add-permission \
+	> aws $ aws lambda add-permission \
 	>     --function-name testFunction \
 	>     --statement-id s3-event-trigger \
 	>     --action "lambda:InvokeFunction" \
@@ -58,14 +58,15 @@ In order to quickly process and summarize this data, the company requires 512 MB
 	>     --source-account 863518457619
 
 - 반환값:
-	{
-		"Statement": "{\"Sid\":\"s3-event-trigger\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"s3.amazonaws.com\"},\"Action\":\"lambda:InvokeFunction\",\"Resource\":\"arn:aws:lambda:ap-northeast-2:863518457619:function:testFunction\",\"Condition\":{\"StringEquals\":{\"AWS:SourceAccount\":\"863518457619\"},\"ArnLike\":{\"AWS:SourceArn\":\"arn:aws:s3:::kennybaik-bucket\"}}}"
-	}
+
+	> {
+	> 	"Statement": "{\"Sid\":\"s3-event-trigger\",\"Effect\":\"Allow\",\"Principal\":{\"Service\":\"s3.amazonaws.com\"},\"Action\":\"lambda:InvokeFunction\",\"Resource\":\"arn:aws:lambda:ap-northeast-2:863518457619:function:testFunction\",\"Condition\":{\"StringEquals\":{\"AWS:SourceAccount\":\"863518457619\"},\"ArnLike\":{\"AWS:SourceArn\":\"arn:aws:s3:::kennybaik-bucket\"}}}"
+	> }
 
 
 - 이벤트 트리거 연관 설정 추가
 
-	aws $ aws s3api put-bucket-notification-configuration --bucket kennybaik-bucket \
+	> aws $ aws s3api put-bucket-notification-configuration --bucket kennybaik-bucket \
 	> --notification-configuration '{
 	>   "LambdaFunctionConfigurations": [
 	>     {
