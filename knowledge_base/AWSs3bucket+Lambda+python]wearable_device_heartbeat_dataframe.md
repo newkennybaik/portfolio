@@ -1,4 +1,4 @@
-# Overview
+# AWS S3 Bucket + Event Trigger Setting + AWS Lambda(Python 3.9) Overview
 1. A wellness company is currently working on a wearable device that monitors key health metrics such as heart rate, sleep, and steps per day. 
 The device is designed to send data to an Amazon S3 bucket for storage and analysis. 
 On a daily basis, the device produces 1 MB of data. 
