@@ -13,7 +13,7 @@ In order to quickly process and summarize this data, the company requires 512 MB
 	~ $ aws s3 mb s3://kennybaik-bucket
 	make_bucket: kennybaik-bucket
 
-## lambda 함수 작성
+## lambda 함수 작성 (Python 3.9)
 	import json
 	import boto3
 	import pandas as pd
@@ -121,13 +121,7 @@ pandas 모듈이 lambda에 포함이 안되어 pandas를 포함한 lambda 배포
 	zip -r lambda_package.zip .
 	aws lambda update-function-code --function-name testFunction --zip-file fileb://lambda_package.zip
 	
-	echo '{
-	"heart_rate": [75, 80, 72, 68, 90],
-	"steps": [5000, 7500, 6800, 8000, 9200],
-	"sleep_hours": [6, 7.5, 5, 8, 7]
-	}' > new_test_data_202503041310.json
-
 
 # Conclusion
-- json 데이터를 통해 구현은 완료. 정상동작함.
-- 현재 추가 확인중.
+- AWS Lambda 함수(파이썬)를 통해 S3에서 데이터를 자동으로 추출에서 데이터 프레임에 넣고 로그를 찍어주는 기능은 구현 완료. 
+- 정상동작 함. 다만 현재 추가 확인중.
