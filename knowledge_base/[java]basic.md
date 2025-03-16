@@ -1,5 +1,5 @@
 # Java Basic Overview
-  - For reminding 5 years ago school project.
+  - For reminding school project I did 5 years ago.
   
 # Java 주요 구문 & 예제
 
