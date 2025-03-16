@@ -86,7 +86,7 @@ In order to quickly process and summarize this data, the company requires 512 MB
 ```
 
 ## 테스트할 json파일 만들기
-````bash
+```bash
 	echo '{
 	"heart_rate": [75, 80, 72, 68, 90],
 	"steps": [5000, 7500, 6800, 8000, 9200],
