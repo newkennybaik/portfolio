@@ -4,7 +4,7 @@
 # Java 주요 구문 & 예제
 
 ## 1. 변수 & 데이터 타입 선언 (Variable & Data Type)
-'''java
+```java
 public class Variable_DataType {
     public static void main(String[] args) {
         int age = 33;
@@ -18,9 +18,9 @@ public class Variable_DataType {
         System.out.println("성인 여부: " + isAdult);
     }
 }
-
+```
 ## 2. if-else 문
-'''java
+```java
 public class If_Else {
     public static void main(String[] args) {
         int houseprice = 15;
@@ -37,9 +37,9 @@ public class If_Else {
             System.out.println("거지");
     }
 }
-	
+```
 ## 3. switch 문
-'''java
+```java
 public class Switch {
     public static void main(String[] args) {
         int answer = 2;
@@ -61,11 +61,11 @@ public class Switch {
         }
     }
 }
-
+```
 ## 4. 반복문 (for, while, do-while)
 	
 	4.1 for문 (반복 실행)
-'''java
+```java
 public class For {
     public static void main(String[] args) {
         for (int i = 2; i <= 10; i++) {
@@ -73,12 +73,12 @@ public class For {
         }
     }
 }
-
+```
 // 특정 횟수만큼 반복할 때 가장 많이 사용됨
 
 	
 	4.2 while문
-'''java
+```java
 public class While {
     public static void main(String[] args) {
         int smash = 5;
@@ -88,13 +88,13 @@ public class While {
         }
     }
 }
-
+```
 // 특정 조건이 충족될 때까지 반복하는 코드
 
 ## 5. Array, Arraylist (배열 & 리스트)
 
 	5.1 Array
-'''java	
+```java	
 public class Array {
     public static void main(String[] args) {
         String[] language = {"한국어", "중국어", "영어", "일본어"};
@@ -104,9 +104,9 @@ public class Array {
         }
     }
 }
-
+```
 	5.2 ArrayList
-'''java	
+```java
 import java.util.ArrayList;
 
 public class Array_List {
@@ -122,9 +122,9 @@ public class Array_List {
         }
     }
 }
-
+```
 ## 6. 메서드(함수), 기본 메서드 선언 & 사용
-'''java
+```java
 public class Method{
     public static void main(String[] args) {
         guiltyPleas("치킨");
@@ -133,9 +133,9 @@ public class Method{
         System.out.println("오늘은 " + cuisine + "이다!");
     }
 }
-
+```
 ## 7. 예외 처리 (try-catch)
-'''java
+```java
 public class Try_catch {
     public static void main(String[] args) {
         try {
@@ -145,11 +145,11 @@ public class Try_catch {
         }
     }
 }
-
+```
 ## 8. 파일 입출력 (파일 읽기 & 쓰기)
 
 	8.1 출력 (파일은 ./untitled/src/Read_text.java 이므로 src 바깥에 위치)
-'''java	
+```java	
 import java.io.*;
 
 public class Read_text {
@@ -162,9 +162,9 @@ public class Read_text {
         scanner.close();
     }
 }
-
+```
 	8.2 입력 (파일은 ./untitled/src/Write_text.java 이므로 src 바깥에 output.txt 생성됨.)
-'''java
+```java
 import java.io.*;
 
 public class Write_text{
@@ -176,7 +176,7 @@ public class Write_text{
         editor.close();
     }
 }
-
+```
 # Conclusion
 
 ## Java 기본 구문 정리
