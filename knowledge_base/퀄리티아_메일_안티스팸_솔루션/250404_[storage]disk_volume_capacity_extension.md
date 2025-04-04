@@ -1,0 +1,167 @@
+# Disk volume/storage capacity extension overview
+Cient's requirements:
+1. 현재 고객사에서는 여러 자회사 도메인을 갖고 있음.(a.com, a.co.kr, a-support.com 등)
+2. 도메인별로 사용자 데이터가 분리되어 있으며, 같은 볼륨그룹(email_volume_group)에 포함되어 있지만 도메인은 다른 논리볼륨(LVM)으로 분리되어 있음
+3. 각 논리볼륨은 알아볼수 있도록 번호를 매겨서 폴더에 마운트해서 사용중임(예: /data01, /data02, /data03)
+4. 이번에 새로 디스크를 2개를 추가하였으며, 2T 짜리 2개의 디스크를 하나의 볼륨그룹으로 포함시켜서 4T 짜리 하나의 디스크 처럼 동작하도록 요청
+5. 즉, LVM이 데이터를 자동 분산 저장하도록 설정 요청 (RAID0와 striping처럼 디스크별로 I/O를 분산)
+
+
+# Steps
+
+## 1. Structure
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+### 3.1 
+```bash
+# useradd -u 1000 -g 1000 tomcat
+# yum -y install nfs-utils
+# yum -y install cifs-utils
+
+# systemctl start rpcbind
+# systemctl start nfs-server // 공유주체인 스토리지 서버만
+# systemctl enable rpcbind
+# systemctl enable nfs-server
+```
+
+### 3.2 공유 폴더 생성 및 마운트 설정
+
+#### 3.2.0 VMware에 디스크 추가 (가상머신설정)
+1. VM 전원을 끈 상태에서 VM 선택 → 우클릭 → Settings (설정)
+2. 하드웨어 탭에서 → [Add] 클릭
+3. Hard Disk 선택 → Next
+4. nvme 선택 (기본) → Next
+5. Create a new virtual disk → Next
+6. 디스크 크기 입력 (20 GB) 
+	Storage 방식: Split 또는 Single file (기본값 그대로 OK)
+	디스크 위치 및 이름: 기본값 또는 원하는 이름
+7. 완료 후 → 디스크가 추가됨 (보통 /dev/nvme0n2)
+
+#### 3.2.1 물리 볼륨 생성 및 VG(볼륨그룹-rl)에 디스크 추가
+- 실제 공간 할당은 PV -> VG -> LV -> 파일시스템 생성(ext4) -> 마운트 -> fstab순으로 추가하면 됨
+```bash
+# lsblk
+NAME        MAJ:MIN RM  SIZE RO TYPE MOUNTPOINTS
+sr0          11:0    1  1.8G  0 rom
+nvme0n1     259:0    0   20G  0 disk
+├─nvme0n1p1 259:1    0    1G  0 part /boot
+└─nvme0n1p2 259:2    0   19G  0 part
+  ├─rl-root 253:0    0   17G  0 lvm  /
+  └─rl-swap 253:1    0    2G  0 lvm  [SWAP]
+nvme0n2     259:3    0   20G  0 disk
+
+# pvcreate /dev/nvme0n2
+  Physical volume "/dev/nvme0n2" successfully created.
+
+# vgextend rl /dev/nvme0n2
+  Volume group "rl" successfully extended
+
+# vgs
+  VG #PV #LV #SN Attr   VSize  VFree
+  rl   2   2   0 wz--n- 38.99g <20.00g	//VFree가 기존에는 0이었다가 지금은 20G로 늘었음
+```
+
+#### 3.2.2 논리 볼륨 생성 (10GB) 및 파일시스템 생성(ext4)
+```bash
+# lvcreate -n lv_shared -L 10G rl
+  Logical volume "lv_shared" created.
+
+# mkfs.ext4 /dev/rl/lv_shared
+mke2fs 1.46.5 (30-Dec-2021)
+Creating filesystem with 2621440 4k blocks and 655360 inodes
+Filesystem UUID: fbfa7fe8-b183-4db7-92af-06d5ee3c8fef
+Superblock backups stored on blocks:
+        32768, 98304, 163840, 229376, 294912, 819200, 884736, 1605632
+
+Allocating group tables: done
+Writing inode tables: done
+Creating journal (16384 blocks): done
+Writing superblocks and filesystem accounting information: done
+```
+
+#### 3.2.3 /mnt 폴더로 마운트 및 fstab 등
+```bash
+# mkdir -p /mnt
+# mount /dev/rl/lv_shared /mnt
+
+# df -h
+Filesystem                Size  Used Avail Use% Mounted on
+devtmpfs                  4.0M     0  4.0M   0% /dev
+tmpfs                     1.8G     0  1.8G   0% /dev/shm
+tmpfs                     726M  9.1M  717M   2% /run
+/dev/mapper/rl-root        17G  1.4G   16G   8% /
+/dev/nvme0n1p1            960M  231M  730M  25% /boot
+tmpfs                     363M     0  363M   0% /run/user/0
+/dev/mapper/rl-lv_shared  9.8G   24K  9.3G   1% /mnt
+
+# echo "/dev/rl/lv_mnt /mnt ext4 defaults 0 0" | sudo tee -a /etc/fstab
+```
+#### 3.2.4 공유폴더 생성 및 메일서버에서 마운트
+```bash
+# mkdir /mnt/maildata && mkdir /mnt/spamdata
+# cd /mnt && chown -R tomcat:tomcat *data
+
+(공유 폴더의 역할을 하려면 메일서버의 tomcat 권한과 동일한 권한을 유지한채로 마운트해야하며, no_root_sqush 옵션을 줘야함)
+
+# vi /etc/exports
+[/etc/exports]
+/mnt/maildata *(rw,sync,no_root_squash)
+/mnt/spamdata *(rw,sync,no_root_squash)
+
+# exportfs -ra
+# exportfs -v
+/mnt/maildata   <world>(sync,wdelay,hide,no_subtree_check,sec=sys,rw,secure,no_root_squash,no_all_squash)
+/mnt/spamdata   <world>(sync,wdelay,hide,no_subtree_check,sec=sys,rw,secure,no_root_squash,no_all_squash)
+
+# showmount -e 192.168.136.130
+Export list for 192.168.136.130:
+/mnt/spamdata *
+/mnt/maildata *
+
+# systemctl stop firewalld
+# systemctl disable firewalld
+```
+
+### 3.3 메일서버에서 마운트
+
+#### 3.3.1 fstab을 이용한 부팅 시 자동 마운트 설정.
+```bash
+# vi /etc/fstab
+[/etc/fstab]
+192.168.136.128:/mnt/maildata/	/usr/local/DEEPSoft/Postian/shared   nfs   defaults,_netdev  0 0
+192.168.136.138:/mnt/spamdata/	/usr/local/DEEPSoft/WBlockG5/shared   nfs   defaults,_netdev  0 0
+
+(_netdev 옵션을 줘서 네트워크가 살아난 뒤 마운트되도록 보장. defaults 옵션에는 기본적으로 rw,suid,dev,exec,auto,nouser,async 포함되어 있음)
+```
+
+#### 3.3.2 메일서버에서 스토리지 서버의 공유폴더 마운트
+```bash
+# mount -t nfs 192.168.136.130:/mnt/maildata/ /usr/local/DEEPSoft/Postian/shared
+# mount -t nfs 192.168.136.130:/mnt/spamdata/ /usr/local/DEEPSoft/WBlockG5/shared
+
+# df -h
+Filesystem                     Size  Used Avail Use% Mounted on
+devtmpfs                       4.0M     0  4.0M   0% /dev
+tmpfs                          1.8G     0  1.8G   0% /dev/shm
+tmpfs                          726M  9.1M  717M   2% /run
+/dev/mapper/rl-root             36G  4.8G   31G  14% /
+/dev/nvme0n1p1                 960M  231M  730M  25% /boot
+tmpfs                          363M     0  363M   0% /run/user/0
+192.168.136.130:/mnt/maildata   17G  1.4G   16G   8% /usr/local/DEEPSoft/Postian/shared
+192.168.136.130:/mnt/spamdata   17G  1.4G   16G   8% /usr/local/DEEPSoft/WBlockG5/shared
+```
+
+### 3.3.3 메일서버에서 데이터 공유를 위한 내부 설정(비공개)
