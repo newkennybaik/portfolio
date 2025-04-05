@@ -3,7 +3,7 @@
 ## 자기소개
 1. Name: 백진규, 白真圭， Jinkyu Baik (English Name: Kenny Baik)
 
-2. Sex: 남 - Male
+2. Sex: 남 - Male (Height: 160cm, Weight: 60 kg)
 
 2. Date of Birth: 91.11.10 (10th Nov, 1991)
 
