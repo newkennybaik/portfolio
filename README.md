@@ -51,4 +51,4 @@
 - Tomcat, JVM, Apache, Nginx, VM, NAS Storage, Springboot, Django, Wireshark, BurpSuite, API, Azure, AWS, Mysql, SQLite, Linux Bash, HTML/CSS etc.
 
 ## Bios
-- 세상은 넓음.
+- 세상은 넓음. Hater gotta hate.
