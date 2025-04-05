@@ -15,6 +15,7 @@ Cient's requirements & Scenario
 - Logical Volume 논리볼륨 (LV 또는 LVM)
 - File System 파일시스템 (ext4, xfs)
 - Mount 마운트
+- fstab 등록
 
 ## 2. Partition - 각 디스크에 파티션 생성
 ```bash
@@ -61,13 +62,19 @@ LV 생성
 
 ## 7. Mount 마운트
 
-마운트는 /data5에 함
+마운트는 data05에 함
 ```bash
-# mount /dev/email_volume_group /data05
+# mount /dev/email_volume_group/vdjnk /data05
+```
+
+## 8. fstab 등록
+```bash
+echo "UUID=fbfa7fe8-b183-4db7-92af-06d5ee3c8fef   /mail05   xfs   defaults   0 0" | tee -a /etc/fstab
 ```
 
 # Disk Check
-- PV, VG, LV in consecutive manner
+
+## 1. PV, VG, LV in consecutive manner
 
 ```bash
 # pvs (물리볼륨)
@@ -93,9 +100,52 @@ LV 생성
 # lvs (논리볼륨)
   LV      VG     Attr       LSize     Pool Origin Data%  Meta%  Move Log Cpy%Sync Convert
   info_v1    information_technology_volume_group   -wi-ao----  <***.**g
-  maillv1 mailvg -wi-ao----     1.95t
-  maillv2 mailvg -wi-ao----    <2.54t
-  maillv3 mailvg -wi-ao----     2.34t
-  maillv4 mailvg -wi-ao---- <1000.00g
-  mailvg5 mailvg -wi-ao----    <4.00t
+  maillv4 email_volume_group -wi-ao---- <1000.00g
+  vdjnk email_volume_group -wi-ao----    <4.00t
 ```
+
+## 2. lsblk
+
+```bash
+# lsblk
+```
+
+```bash
+vdj                252:192  0    2T  0 disk
+└─vdk1             252:193  0    2T  0 part
+  └─email_volume_group-vdjnk 253:5    0    4T  0 lvm
+vdk                252:208  0    2T  0 disk
+└─vdk1             252:209  0    2T  0 part
+  └─email_volume_group-vdjnk 253:5    0    4T  0 lvm
+```
+
+```bash
+# blkid /dev/email_volume_group/vdjnk
+/dev/email_volume_group/vdjnk: UUID="fbfa7fe8-b183-4db7-92af-06d5ee3c8fef" TYPE="xfs"
+```
+
+## 3. lvdisplay
+```bash
+# lvdisplay
+```
+```bash
+ --- Logical volume ---
+  LV Path                /dev/email_volume_group/vdjnk
+  LV Name                vdjnk
+  VG Name                email_volume_group
+  LV UUID                CwHddq-D4fN-lWiM-MdRa-HnnN-uzIg-FYYmNc
+  LV Write Access        read/write
+  LV Creation host, time localhost.localdomain, 2025-03-23 22:26:43 +0900
+  LV Status              available
+  # open                 1
+  LV Size                <4.00 TiB
+  Current LE             0000000
+  Segments               1
+  Allocation             inherit
+  Read ahead sectors     auto
+  - currently set to     8192
+  Block device           253:2
+```
+
+### Conclusion
+- 실전형 디스크 증설 예시
