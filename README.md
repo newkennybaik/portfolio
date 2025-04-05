@@ -28,8 +28,8 @@
 - 2015-2016: 호주 워킹홀리데이 1년. 멜론 농장에서 수박 따고, 청소 회사에서 외노자 신분으로 영어배움. (Stayed in Australia with Working Holiday Visa)
 
 ---------------------여기 아래는 IT 관련 from kicked off my career in IT industry, until now---------------------------
-- 2016-2017: 호주 마틴 컬리지에서 시스템 운영 전문학사 취득(2년전문대해당), (Acquiredm Deploma of Information Technologyh Degree in Australia)
-- 2016-2019: 찰스 스튜어트 대학에서 IT 시스템 분석 학사 취득 (4년제대학에 해당) (Acquired Bachelor of Information Technology Degree in Australia)
+- 2016-2017: 호주 마틴 컬리지에서 시스템 운영 전문학사 취득(2년제 전문대dp 해당), (Acquired Deploma of Information Technologyh Degree in Australia)
+- 2016-2019: 찰스 스튜어트 대학에서 IT 시스템 분석 학사 취득 (4년제 대학에 해당) (Acquired Bachelor of Information Technology Degree in Australia)
 - 2020-2021: 말레이시아 소재 일본 기업(후지쯔 계열사)에서 직장생활. IT Helpdesk Engineer로 IT 인프라 관련 업무 담당 (Kicked off my IT career in Malaysia)
 - 2021-now: 한국에서 IT 관련 직무 계속 하는중 (년수로 치면 학교 포함 10년, 실 업무기간은 4년)
 
