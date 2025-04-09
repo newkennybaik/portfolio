@@ -124,7 +124,52 @@ the test mail has been sent.
 
 ```
 
-- 아래는 퀄리티아의 WBlock 스팸 서버에서 SMTP 세션을 테스트한 사례:
+- 메일 발송 성공 후, 네이버 메일함에서 eml 원문 PC로 저장해서 txt로 열어보면 아래와 같이 메일헤더 원문을 볼 수 있음
+```bash
+ARC-Seal: i=1; a=rsa-sha256; d=naver.com; s=arc-20180730; t=1744099486;
+	cv=none; b=bA+6ERcliwOJyO2iXZX7TBoLRz6pQ+XTFdgxleWca69cyFT6ZVI5oRINeVgy
+	 HUm81iUD7dukEdVBl/wUQ8H7U6KljVDpZwaWCFgbApMwFqqOlRI1/O/gPX8j2OC4vR6nVo
+	 fzOiot8YyiaqHLemWL5oSBUHf51d2ys/xvAn+SaB4h/Le8+WaJ+921Aa5St+3Iwh4atTHz
+	 mqZj8vlExdf6XLE6/wXx/8qpuqUPK4vWlmk9UlYN9Oht3E+gnPt+7qfeGAkj4f5CMgW1PQ
+	 oTJ+4QdfYFoOuBzTh7O0m1V3tbZh2hdphnXgnQqHsDLYnmeMBa9ibvETvAqMvgIRKcjAvG
+	 zw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=naver.com; s=arc-20180730;
+	t=1744099486; c=relaxed/relaxed;
+	bh=b1nMssq5Bj9ctLlp1xUQI/cazsvT+TEZ6AlaD+9OxF4=; h=subject:from:to;
+	b=kgpcC8KUwO5llt+XOsw2SlrtiIHmH/s2mHvWgjRGS7w29ciXlziY5NwzJX82AqJppP5P8
+	 KYfefepzxLI/YueIy3eF5SSnUEzueJz8dgP3NyDEvdubxu5/RqqxdFlocS+CA9WPH/Q+/h
+	 7QanQwsYleCsIfj6omufO4rik4ZQUwce0QHYwpEi64OvTxPZ8cg1yRlZlRQQW/b/M6uRgw
+	 ndB948sGr98UqPht4CSpt4Tf6C0yv9/8C9oe3dDjf1mNlgcHDann1D8LixkF3tr8ocNx/W
+	 COP6SwvYPwMS3McJervhRsLBv+g00FRPHau4cfKeBM2TvuSHjvUnD3B0zbwhWNQ==
+ARC-Authentication-Results: i=1; mx.naver.com; 
+  spf=pass (mx.naver.com: domain of jkbaik@qualitia.co.kr designates 112.216.5.26 as permitted sender) smtp.mailfrom=jkbaik@qualitia.co.kr
+Return-Path: <jkbaik@qualitia.co.kr>
+X-WM-Dns-Ptr: none
+Received-SPF: pass (mx.naver.com: domain of jkbaik@qualitia.co.kr designates 112.216.5.26 as permitted sender)
+  client-ip=112.216.5.26; x-iptype=default;
+Authentication-Results: mx.naver.com;
+  spf=pass (mx.naver.com: domain of jkbaik@qualitia.co.kr designates 112.216.5.26 as permitted sender) smtp.mailfrom=jkbaik@qualitia.co.kr
+X-Naver-ESV: wwFn+6J4p63CbHmq7BwdbXFYKA2mFAtrjJ+Y
+X-Session-IP: 112.216.5.26
+Message-ID: <1744099486401.7f47f.111701@crcvmail104.nm>
+Date: Tue, 08 Apr 2025 17:04:46 +0900
+Received: from test ([112.216.5.26])
+  by crcvmail104.nm.naver.com with ESMTP id rD2--NyISyW-tKdbFq8e0g
+  for <newkennybaik@naver.com>;
+  Tue, 08 Apr 2025 08:04:46 -0000
+subject: test mail
+from: test@test.com
+to: test@naver.com
+
+the test mail has been sent.
+```
+
+## 5. SMTP 패킷을 분석하는 방법
+- 퀄리티아의 제품은 SMTP에 대한 세션 로그가 smtp.log.YYYYMMDD 형식으로 서버에 저장됨.
+- 고객사에서 메일이 정상적으로 송/수신이 안된 사례에 대한 문의가 빗발치는 경우가 많고, 평소에는 아래와 같이 로그 분석을 통해서 정상적으로 수신이 안된 사유를 확인해서 응대함.
+
+### 5.1 퀄리티아의 WBlock 스팸서버에서 텔넷 명령어로 발송 시 발송 불가 사유 분석
+- WBlock 스팸서버에서 newkennybaik@naver.com 네이버 사용자에게 메일을 발송했으나 수신되지 못했음.
 ```bash
 # telnet localhost 25
 
@@ -154,15 +199,13 @@ test mail has been sent for testing purposes.
 
 ```
 
-## 5. SMTP 패킷을 분석하는 방법
-- 퀄리티아의 제품은 SMTP에 대한 세션 로그가 smtp.log.YYYYMMDD 형식으로 서버에 저장됨.
-- 고객사에서 메일이 정상적으로 송/수신이 안된 사례에 대한 문의가 빗발치는 경우가 많고, 평소에는 아래와 같이 로그 분석을 통해서 정상적으로 수신이 안된 사유를 확인해서 응대함.
-
-### 5.1 퀄리티아의 WBlock 스팸서버에서 텔넷 명령어로 발송 시 발송 불가 사유 분석
-- 4번에서 WBlock 스팸서버에서 newkennybaik@naver.com 네이버 사용자에게 메일을 발송했으나 수신되지 못했음.
 - 사유는 아래 로그를 통해서 확인할 수 있음.
 - 로그를 확인하기 위해 실제 사용자에게 요청하는 정보는: 
-(1)송신자/수신자의 메일주소, (2)송/수신 시간대, (3)간략한 메일제목 등이 있음.
+```bash
+(1)송신자/수신자의 메일주소, 
+(2)송/수신 시간대, 
+(3)간략한 메일제목 등이 있음.
+```
 
 #### Steps
 1. 메일주소 검색해서 세션 ID를 파악.
@@ -182,7 +225,7 @@ test mail has been sent for testing purposes.
 
 ```bash
 # grep 7489663442285853448 smtp.log.20250405123050.log
-(송신서버 단)
+(송신서버 단 발송세션)
 2025/04/05 12:19:20 [3361164/3726498496/1] [7489663442285853448] Connected from [127.0.0.1]
 2025/04/05 12:19:20 [3361164/3726498496/3] [7489663442285853448] <<< 220 jkbaik.com ESMTP DEEPSoft WBlock.s.c 5.04.887; Sat, 5 Apr 2025 12:19:20 +0900
 2025/04/05 12:19:22 [3361164/3726498496/3] [7489663442285853448] >>> ehlo test
@@ -202,7 +245,7 @@ test mail has been sent for testing purposes.
 2025/04/05 12:20:43 [3361164/3726498496/3] [7489663442285853448] Queuing is done, Q# is 1
 
 
-(수신서버 단)
+(수신서버 단에서 수신세션)
 2025/04/05 12:20:43 [3361164/3873525568/3] Begin QSenderFile, remote/007/7489663442285853448.0
 2025/04/05 12:20:43 [3361164/3873525568/2] [7489663442285853448] Trying to Check Local IP mx2.naver.com:25
 2025/04/05 12:20:43 [3361164/3873525568/2] [7489663442285853448] Trying to connect mx2.naver.com:25
