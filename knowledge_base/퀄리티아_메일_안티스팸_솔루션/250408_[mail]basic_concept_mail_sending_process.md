@@ -170,7 +170,7 @@ the test mail has been sent.
 
 ### 5.1 퀄리티아의 WBlock 스팸서버에서 텔넷 명령어로 발송 시 발송 불가 사유 분석
 - WBlock 스팸서버에서 newkennybaik@naver.com 네이버 사용자에게 메일을 발송했으나 수신되지 못했음.
-- 송신시에는 정상적으로 발송성공코드인 250번을 반환하고 있는 상황이었음.
+- 송신시에는 정상적으로 발송 성공코드인 250번을 반환하고 있는 상황이었음.
 
 ```bash
 # telnet localhost 25
@@ -389,7 +389,7 @@ test mail has been sent for testing purposes.
 2025/04/07 11:59:00 [24982/2625948560/3] [7490400342781499835] [INFO] MTLS connection status : [Allow when the receive server use only tls. [SSL_get_verify_result() : 18]]
 2025/04/07 11:59:00 [24982/2625948560/3] [7490400342781499835] <<< EHLO antispam.deepsoft.co.kr
 2025/04/07 11:59:00 [24982/2625948560/3] [7490400342781499835] >>> 250-Hello 211.115.206.73, pleased to meet you
-2025/04/07 11:59:00 [24982/2625948560/3] [7490400342781499835] <<< MAIL FROM: <jkkim@headit.co.kr>
+2025/04/07 11:59:00 [24982/2625948560/3] [7490400342781499835] <<< MAIL FROM: <test@test.com>
 2025/04/07 11:59:00 [24982/2625948560/3] [7490400342781499835] >>> 250 <test@test.com> ... Sender OK
 2025/04/07 11:59:00 [24982/2625948560/3] [7490400342781499835] <<< RCPT TO: <jkbaik@qualitia.co.kr>
 2025/04/07 11:59:00 [24982/2625948560/3] [7490400342781499835] >>> 250 <jkbaik@qualitia.co.kr> ... Recipient OK
