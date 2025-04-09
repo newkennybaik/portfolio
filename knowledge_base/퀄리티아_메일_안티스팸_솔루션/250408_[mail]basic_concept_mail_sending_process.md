@@ -337,7 +337,7 @@ test mail has been sent for testing purposes.
 2025/04/07 11:58:53 [24982/2642852752/2] [7490400342781499835] Filter Con : res[0] name[] act[0] save[0]
 2025/04/07 11:58:53 [24982/2642852752/2] [7490400342781499835] Filter BlockTerm : res[0] name[] act[0] save[0]
 
-(퀄리티아의 안티스팸 SMTP 서비스로 접속 성공 및 greeting 메세지 및 250 성공코드)
+(지금 송신자는 수신자의 메일세션에 붙는것에 성공하여 수신측의, 즉 퀄리티아의 WBlock greeting 메세지가 나옴, 및 250 성공코드)
 2025/04/07 11:58:53 [24982/2642852752/3] [7490400342781499835] <<< 220 deepsoft.co.kr ESMTP AntiSpam Service ready at Mon, 7 Apr 2025 11:58:53 +0900
 2025/04/07 11:58:53 [24982/2642852752/3] [7490400342781499835] >>> EHLO test.outbound.protection.outlook.com
 2025/04/07 11:58:53 [24982/2642852752/3] [7490400342781499835] <<< 250-antispam.deepsoft.co.kr [192.168.136.88], pleased to meet you
@@ -349,7 +349,7 @@ test mail has been sent for testing purposes.
 2025/04/07 11:58:53 [24982/2642852752/3] [7490400342781499835] >>> EHLO test.outbound.protection.outlook.com
 2025/04/07 11:58:53 [24982/2642852752/3] [7490400342781499835] <<< 250-antispam.deepsoft.co.kr [192.168.136.88], pleased to meet you
 
-(사용자정보)
+(사용자정보, test@test.com으로 익명화했음.)
 2025/04/07 11:58:53 [24982/2642852752/3] [7490400342781499835] >>> MAIL FROM:<test@test.com>
 2025/04/07 11:58:53 [24982/2642852752/3] [7490400342781499835] <<< 250 test@test.com... Sender OK
 
@@ -396,7 +396,7 @@ test mail has been sent for testing purposes.
 (250을 반환하면 정상적으로 송신자가 스팸서버로 수신이 완료되었다는 얘기임.)
 2025/04/07 11:59:00 [24982/2642852752/3] [7490400342781499835] <<< 250 Message accepted for delivery.
 
-(이제 스팸서버가 내부 메일서버로 전달)
+(이제 스팸서버가 필터링을 끝냈으므로, SMTP 통신으로 내부 메일서버로 전달)
 2025/04/07 11:59:00 [24982/2642852752/3] [7490400342781499835] Queuing is done, Q# is 1
 2025/04/07 11:59:00 [24982/2625948560/3] Begin QSenderFile, local/003/7490400342781499835.0
 2025/04/07 11:59:00 [24982/2625948560/2] [7490400342781499835] Trying to Check Local IP 211.115.206.70:25
