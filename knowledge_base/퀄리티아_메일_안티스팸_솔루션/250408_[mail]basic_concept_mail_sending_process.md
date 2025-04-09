@@ -170,6 +170,8 @@ the test mail has been sent.
 
 ### 5.1 퀄리티아의 WBlock 스팸서버에서 텔넷 명령어로 발송 시 발송 불가 사유 분석
 - WBlock 스팸서버에서 newkennybaik@naver.com 네이버 사용자에게 메일을 발송했으나 수신되지 못했음.
+- 송신시에는 정상적으로 발송성공코드인 250번을 반환하고 있는 상황이었음.
+
 ```bash
 # telnet localhost 25
 
