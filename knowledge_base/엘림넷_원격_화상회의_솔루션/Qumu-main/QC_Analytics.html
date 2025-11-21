@@ -1,0 +1,2365 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Qumu Reporting Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body class="bg-gray-100 font-sans">
+  <!-- Header Bar -->
+  <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+              d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
+              clip-rule="evenodd"></path>
+          </svg>
+        </div>
+        <h1 class="text-xl font-bold">Qumu Reporting Dashboard</h1>
+      </div>
+
+      <!-- Login Status -->
+      <div id="loginStatus" class="flex items-center space-x-4">
+        <div id="loggedOutStatus" class="flex items-center space-x-2">
+          <div class="w-2 h-2 bg-red-400 rounded-full"></div>
+          <span class="text-sm opacity-90">Not Connected</span>
+        </div>
+        <div id="loggedInStatus" class="hidden flex items-center space-x-3">
+          <div class="flex items-center space-x-2">
+            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <span class="text-sm opacity-90">Connected to</span>
+            <span id="connectedDomain" class="text-sm font-medium bg-white bg-opacity-20 px-2 py-1 rounded"></span>
+          </div>
+          <div class="flex items-center space-x-2">
+            <svg class="w-4 h-4 opacity-75" fill="currentColor" viewBox="0 0 20 20">
+              <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd">
+              </path>
+            </svg>
+            <span id="connectedUser" class="text-sm font-medium"></span>
+          </div>
+          <button id="logoutButton"
+            class="text-sm bg-white bg-opacity-20 hover:bg-opacity-30 px-3 py-1 rounded transition-colors">
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <div class="container mx-auto p-4 max-w-7xl">
+    <!-- Spinner -->
+    <div id="spinner" class="hidden fixed inset-0 bg-gray-500 bg-opacity-50 flex items-center justify-center z-50">
+      <div class="animate-spin rounded-full h-16 w-16 border-t-4 border-blue-600"></div>
+      <div id="statusMessage" class="fixed inset-x-0 top-[60px] text-center text-white font-semibold z-50"></div>
+    </div>
+
+    <!-- Login Form -->
+    <form id="loginForm" class="bg-white p-6 rounded-lg shadow-md mb-4">
+      <h2 class="text-2xl font-semibold mb-4 text-gray-800">
+        Connect to Qumu
+      </h2>
+      <div class="mb-4">
+        <label for="domain" class="block font-medium text-gray-700">Domain:</label>
+        <input type="text" id="domain" placeholder="e.g., demo.qumucloud.com"
+          class="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          required />
+      </div>
+      <div class="mb-4">
+        <label for="username" class="block font-medium text-gray-700">Username:</label>
+        <input type="text" id="username"
+          class="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          required />
+      </div>
+      <div class="mb-4">
+        <label for="password" class="block font-medium text-gray-700">Password:</label>
+        <input type="password" id="password"
+          class="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          required />
+      </div>
+      <button type="submit"
+        class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors flex items-center space-x-2">
+        <span>Connect</span>
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7l5 5m0 0l-5 5m5-5H6"></path>
+        </svg>
+      </button>
+    </form>
+
+    <!-- Report Form -->
+    <form id="reportForm" class="hidden bg-white p-6 rounded-lg shadow-md mb-4">
+      <h2 class="text-2xl font-semibold mb-4 text-gray-800">
+        Generate Report
+      </h2>
+      <p class="text-sm font-semibold mb-4 text-gray-800 mb-2">
+        Enter a Presentation GUID for a single video report -- OR -- Select a Folder and Playlist to analyze a
+        collection.
+      </p>
+      <p></p>
+
+      <div id="selectors" class="mb-4"></div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div>
+          <label for="startDate" class="block font-medium text-gray-700">Start Date:</label>
+          <input type="date" id="startDate"
+            class="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            required />
+        </div>
+        <div>
+          <label for="endDate" class="block font-medium text-gray-700">End Date:</label>
+          <input type="date" id="endDate"
+            class="w-full border border-gray-300 px-3 py-2 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            required />
+        </div>
+      </div>
+      <div class="flex flex-wrap gap-4 mb-4">
+        <div class="flex items-center">
+          <input type="checkbox" id="sortByViews" class="mr-2 text-blue-600 focus:ring-blue-500" />
+          <label for="sortByViews" class="text-gray-700">Sort by Views</label>
+        </div>
+        <div class="flex items-center">
+          <input type="checkbox" id="sortByEngagement" class="mr-2 text-blue-600 focus:ring-blue-500" />
+          <label for="sortByEngagement" class="text-gray-700">Sort by Engagement Quality</label>
+        </div>
+        <div class="flex items-center">
+          <input type="checkbox" id="hideEventTable" class="mr-2 text-blue-600 focus:ring-blue-500" />
+          <label for="hideEventTable" class="text-gray-700">Show Event Table</label>
+        </div>
+
+        <div class="flex items-center hidden">
+          <input type="checkbox" id="includeUserJourney" class="mr-2 text-blue-600 focus:ring-blue-500" />
+          <label for="includeUserJourney" class="text-gray-700 mr-2">Show User Journey Timeline</label>
+        </div>
+
+        <div class="flex items-center">
+          <input type="checkbox" id="includeZeroViews" class="mr-2 text-blue-600 focus:ring-blue-500" />
+          <label for="includeZeroViews" class="text-gray-700">Select presentations with zero views</label>
+        </div>
+
+        <div class="flex items-center">
+          <label for="presentationLimit" class="text-gray-700 mr-2">Max Presentations:</label>
+          <select id="presentationLimit" class="border border-gray-300 px-2 py-1 rounded">
+            <option value="50">50</option>
+            <option value="100" selected>100</option>
+            <option value="200">200</option>
+            <option value="500">500</option>
+          </select>
+        </div>
+      </div>
+
+      <div id="limitWarning"
+        class="hidden text-sm text-yellow-700 bg-yellow-100 border border-yellow-300 p-2 rounded mb-2">
+        Note: Only the first <span id="limitValue">100</span> presentations
+        will be shown. Adjust the "Max Presentations" dropdown to increase the
+        limit.
+      </div>
+
+      <button type="submit"
+        class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition-colors flex items-center space-x-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+            d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z">
+          </path>
+        </svg>
+
+        <span>Generate Report</span>
+      </button>
+    </form>
+
+    <!-- Button Area -->
+    <div id="buttonArea" class="hidden mb-4">
+      <button id="backButton"
+        class="hidden bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors flex items-center space-x-2">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        <span>Back to Report</span>
+      </button>
+    </div>
+
+    <!-- Result Container -->
+    <div id="result" class="bg-white p-6 rounded-lg shadow-md mb-4"></div>
+
+    <!-- Chart Container -->
+    <div id="chartContainer" class="hidden bg-white p-6 rounded-lg shadow-md mb-4"></div>
+
+    <!-- Video Modal -->
+    <div id="videoModal" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg p-4 max-w-4xl w-full">
+        <div class="flex justify-end">
+          <button id="closeModal" class="text-gray-600 hover:text-gray-800 text-2xl font-bold">
+            ×
+          </button>
+        </div>
+        <iframe id="videoIframe" class="w-full h-[500px]" frameborder="0"></iframe>
+      </div>
+    </div>
+  </div>
+
+
+  <script>
+    // Global state to track active API calls
+    let activeApiCalls = 0;
+    let storedUsername = '';
+    let storedPassword = '';
+    let storedDomain = '';
+    let storedPlaylistGuid = '';
+    let storedStartDate = '';
+    let storedEndDate = '';
+    let currentKuluData = [];
+    let chartInstances = {};
+    let foldersData = [];
+
+    // Initialize spinner as hidden
+    document.addEventListener('DOMContentLoaded', () => {
+      const spinner = document.getElementById('spinner');
+      if (spinner && !spinner.classList.contains('hidden')) {
+        spinner.classList.add('hidden');
+      }
+
+      // Load saved login details
+      const savedLogin = localStorage.getItem('qumuLogin');
+      if (savedLogin) {
+        try {
+          const { domain, username, password } = JSON.parse(savedLogin);
+          if (domain && username && password) {
+            document.getElementById('domain').value = domain;
+            document.getElementById('username').value = username;
+            document.getElementById('password').value = password;
+          }
+        } catch (e) {
+          console.warn('Failed to parse saved login:', e);
+        }
+      }
+    });
+
+
+    function safePublisherId(name) {
+      return name.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9\-]/g, '');
+    }
+
+
+
+    // Update login status
+    function updateLoginStatus(isLoggedIn, domain = '', username = '') {
+      const loggedOutStatus = document.getElementById('loggedOutStatus');
+      const loggedInStatus = document.getElementById('loggedInStatus');
+      const connectedDomain = document.getElementById('connectedDomain');
+      const connectedUser = document.getElementById('connectedUser');
+
+      if (isLoggedIn) {
+        loggedOutStatus.classList.add('hidden');
+        loggedInStatus.classList.remove('hidden');
+        connectedDomain.textContent = domain;
+        connectedUser.textContent = username;
+      } else {
+        loggedOutStatus.classList.remove('hidden');
+        loggedInStatus.classList.add('hidden');
+      }
+    }
+
+    // Logout functionality
+    document.getElementById('logoutButton').addEventListener('click', () => {
+      // Clear stored credentials
+      storedUsername = '';
+      storedPassword = '';
+      storedDomain = '';
+      storedPlaylistGuid = '';
+      currentKuluData = [];
+      localStorage.removeItem('qumuLogin');
+
+
+      // Reset UI
+      updateLoginStatus(false);
+      document.getElementById('loginForm').classList.remove('hidden');
+      document.getElementById('reportForm').classList.add('hidden');
+      document.getElementById('buttonArea').classList.add('hidden');
+      document.getElementById('chartContainer').classList.add('hidden');
+      document.getElementById('result').innerHTML = '';
+
+      // Clear form fields
+      document.getElementById('domain').value = '';
+      document.getElementById('username').value = '';
+      document.getElementById('password').value = '';
+
+      // Destroy any existing charts
+      destroyCharts();
+    });
+
+    function formatDuration(ms) {
+      const totalSeconds = Math.floor(ms / 1000);
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      return `${hours}h ${minutes}m ${seconds}s`;
+    }
+
+
+    function formatDateRFC1123(dateStr, isEndDate = false) {
+      let date = new Date(dateStr + 'T00:00:00Z');
+
+      if (isEndDate) {
+        const now = new Date();
+        const todayStr = now.toISOString().split('T')[0];
+
+        if (dateStr === todayStr) {
+          // Add one full day to get today's analytics
+          date.setUTCDate(date.getUTCDate() + 1);
+        }
+      }
+
+      if (isNaN(date)) throw new Error(`Invalid date format: ${dateStr}`);
+      return encodeURIComponent(date.toUTCString().replace('GMT', '+0000'));
+    }
+
+
+    function toggleHidden(element, shouldHide) {
+      if (!element) return;
+      console.log(`Spinner ${shouldHide ? 'hide' : 'show'}:`, element.id);
+      if (shouldHide && !element.classList.contains('hidden')) {
+        element.classList.add('hidden');
+      } else if (!shouldHide && element.classList.contains('hidden')) {
+        element.classList.remove('hidden');
+      }
+    }
+
+    function escapeHtml(unsafe) {
+      if (unsafe == null || typeof unsafe !== 'string') return '';
+      return unsafe
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function destroyCharts() {
+      Object.values(chartInstances).forEach(chart => chart.destroy());
+      chartInstances = {};
+    }
+
+
+    function renderRowsInChunks(data, chunkSize = 500) {
+      const tbody = document.querySelector('#result tbody');
+      const progressEl = document.getElementById('renderProgress');
+      let index = 0;
+
+      function renderChunk() {
+        const slice = data.slice(index, index + chunkSize);
+        const html = slice.map(kulu => {
+          const kuluGuid = kulu.guid;
+          const hasKuluGuid = !!kuluGuid;
+          const score = kulu.engagementQuality;
+          let scoreCell;
+
+          if (score === null || score === undefined) {
+            scoreCell = `<td class="px-4 py-2 border text-center text-gray-400 italic" title="Fewer than 10 views — score not calculated">N/A</td>`;
+          } else {
+            const scoreClass = score > 0.7 ? 'text-green-600 font-semibold'
+              : score > 0.4 ? 'text-yellow-600'
+                : 'text-gray-600';
+            scoreCell = `<td class="px-4 py-2 text-center border ${scoreClass}">${Math.round(score)}</td>`;
+
+          }
+
+
+
+          return `<tr>
+      <td class="px-4 py-2 border">
+      <a class="text-blue-600 underline kulu-link" href="${escapeHtml(kulu.player || '#')}"
+      data-kulu-guid="${escapeHtml(kulu.guid || '')}" target="_blank">
+      ${escapeHtml(kulu.title || 'Untitled')}
+      </a>
+      </td>
+      <td class="px-4 py-2 border text-center">${kulu.reporting?.views ?? 0}</td>
+      ${scoreCell}
+      <td class="px-4 py-2 border text-center">${kulu.guid
+              ? `<button class="kulu-details bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition"
+      data-kulu-guid="${kulu.guid}" aria-label="View event details">View Report</button>`
+              : '<span class="text-gray-500" title="No Kulu events found.">N/A</span>'
+            }</td>
+      <td class="px-4 py-2 border text-center">
+      <input type="checkbox" class="kulu-checkbox" data-guid="${escapeHtml(kulu.guid || '')}" />
+      </td>
+      </tr>`;
+
+        }).join('');
+
+        tbody.insertAdjacentHTML('beforeend', html);
+        const zeroViewCheckbox = document.getElementById('includeZeroViews');
+        if (zeroViewCheckbox?.checked) {
+          const newRows = Array.from(tbody.querySelectorAll('tr'));
+          newRows.slice(-slice.length).forEach(row => {
+            const viewsCell = row.cells[1];
+            if (viewsCell && parseInt(viewsCell.textContent.trim(), 10) === 0) {
+              row.classList.add('bg-yellow-100');
+              const checkbox = row.querySelector('input[type="checkbox"]');
+              if (checkbox) checkbox.checked = true;
+            }
+          });
+        }
+
+
+        index += chunkSize;
+
+        if (progressEl) {
+          const percent = Math.min(100, Math.round((index / data.length) * 100));
+          progressEl.textContent = `Rendering rows... (${percent}%)`;
+        }
+
+        if (index < data.length) {
+          requestIdleCallback(renderChunk);
+
+
+        } else {
+          if (progressEl) progressEl.textContent = `Playlist Report. (Total: ${data.length})`;
+
+          // Add download button after table
+          const downloadBtn = document.createElement('div');
+          downloadBtn.className = 'mt-4';
+          downloadBtn.innerHTML = `
+      <button id="downloadSelectedBtn"
+      class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+      Download Canonical Files
+      </button>
+
+      `;
+
+
+          downloadBtn.innerHTML = `
+      <button id="downloadSelectedBtn"
+      class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition mr-2">
+      Download Canonical Files
+      </button>
+      <button id="downloadCsvBtn"
+      class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+      Export Canonical URLs as CSV
+      </button>
+      `;
+
+          document.getElementById('result').appendChild(downloadBtn);
+          renderPublisherSummaryTable(data);
+        }
+
+
+      }
+
+      renderChunk();
+    }
+
+
+    function openModal(playerUrl) {
+      const modal = document.getElementById('videoModal');
+      const iframe = document.getElementById('videoIframe');
+      iframe.src = playerUrl;
+      modal.classList.remove('hidden');
+    }
+
+    async function validateCredentials(username, password, domain) {
+      const url = `https://${domain}/api/2.2/rest/folders`;
+      const headers = new Headers({
+        'Authorization': 'Basic ' + btoa(`${username}:${password}`)
+      });
+
+      try {
+        console.log('Testing credentials via:', url);
+        const response = await fetch(url, { headers });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error('Login failed:', response.status, errorText);
+          if (response.status === 401) {
+            throw new Error('Invalid username or password');
+          } else {
+            throw new Error(`Login failed: ${response.status} ${errorText}`);
+          }
+        }
+
+        console.log('Credential check passed');
+        return true;
+      } catch (error) {
+        console.error('validateCredentials error:', error);
+        if (error.name === 'TypeError') {
+          throw new Error('Network error: Failed to connect to the server.');
+        }
+        throw error;
+      }
+    }
+
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const sortByViews = document.getElementById('sortByViews');
+      const sortByEngagement = document.getElementById('sortByEngagement');
+
+      if (sortByViews && sortByEngagement) {
+        sortByViews.addEventListener('change', () => {
+          if (sortByViews.checked) sortByEngagement.checked = false;
+        });
+
+        sortByEngagement.addEventListener('change', () => {
+          if (sortByEngagement.checked) sortByViews.checked = false;
+        });
+      }
+    });
+
+
+
+
+
+
+    function renderPublisherSummaryTable(kulus) {
+      const publisherMap = {};
+
+      kulus.forEach(kulu => {
+        const name = (kulu.publisher?.name || 'Unknown').trim();
+        const views = kulu.reporting?.views ?? 0;
+        const engagement = typeof kulu.engagementQuality === 'number' ? kulu.engagementQuality : null;
+
+        if (!publisherMap[name]) {
+          publisherMap[name] = {
+            totalViews: 0,
+            engagementScores: [],
+            presentations: 0
+          };
+        }
+
+        publisherMap[name].totalViews += views;
+        publisherMap[name].presentations += 1;
+        if (engagement !== null) {
+          publisherMap[name].engagementScores.push(engagement);
+        }
+      });
+
+      const sortedPublishers = Object.entries(publisherMap)
+        .sort(([, a], [, b]) => b.totalViews - a.totalViews);
+
+      let html = `
+      <div class="mt-8">
+      <h3 class="text-lg font-semibold mb-2 text-gray-800">Publisher Engagement</h3>
+      <div class="overflow-x-auto">
+      <table class="min-w-full border text-sm text-left bg-white rounded shadow">
+      <thead class="bg-blue-100">
+      <tr>
+      <th class="px-4 py-2 border text-left">Publisher Name</th>
+      <th class="px-4 py-2 border text-center">Presentations</th>
+      <th class="px-4 py-2 border text-center">Total Views</th>
+      <th class="px-4 py-2 border text-center" title="Average engagement score for the publisher's presentations in this playlist. Based on % viewed and time watched.">Avg Engagement 0-100</th>
+      <th class="px-4 py-2 border text-center">Publisher Report</th>
+      </tr>
+      </thead>
+      <tbody>
+      `;
+
+      sortedPublishers.forEach(([name, data]) => {
+        const avgEngagement =
+          data.engagementScores.length > 0
+            ? Math.round(
+              data.engagementScores.reduce((sum, val) => sum + val, 0) / data.engagementScores.length
+            )
+            : 'N/A';
+
+
+        html += `
+      <tr>
+      <td class="px-4 py-2 border text-left">${escapeHtml(name)}</td>
+      <td class="px-4 py-2 border text-center">${data.presentations}</td>
+      <td class="px-4 py-2 border text-center">${data.totalViews}</td>
+      <td class="px-4 py-2 border text-center">${avgEngagement}</td>
+      <td class="px-4 py-2 border text-center">
+      <button class="publisher-report-btn bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition"
+      data-publisher="${escapeHtml(name)}">
+      View Report
+      </button>
+      </td>
+      </tr>
+      `;
+
+
+      });
+
+      html += '</tbody></table></div></div>';
+
+      document.getElementById('result').insertAdjacentHTML('beforeend', html);
+
+      document.querySelectorAll('.publisher-report-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const publisherName = e.target.getAttribute('data-publisher');
+          const id = `publisher-dashboard-${safePublisherId(publisherName)}`;
+          const panel = document.getElementById(id);
+          const button = e.target;
+
+          if (panel) {
+            const isHidden = panel.classList.toggle('hidden');
+            if (isHidden) {
+              button.textContent = 'View Report';
+              button.classList.remove('bg-green-600', 'hover:bg-green-700');
+              button.classList.add('bg-blue-600', 'hover:bg-blue-700');
+            } else {
+              button.textContent = 'Hide Report';
+              button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+              button.classList.add('bg-green-600', 'hover:bg-green-700');
+            }
+          } else {
+            const initialHtml = button.innerHTML;
+            const reportGenerated = renderPublisherDashboard(publisherName);
+
+            // if false or undefined, report was not generated
+            if (reportGenerated === false) {
+              // no changes
+              return;
+            }
+
+            button.textContent = 'Hide Report';
+            button.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            button.classList.add('bg-green-600', 'hover:bg-green-700');
+          }
+
+
+
+
+
+        });
+      });
+
+    }
+
+    function renderPublisherDashboard(publisherName) {
+      const allEvents = [];
+      const matchingKulus = currentKuluData.filter(k => (k.publisher?.name || 'Unknown').trim() === publisherName);
+
+      matchingKulus.forEach(kulu => {
+        if (Array.isArray(kulu.events)) {
+          allEvents.push(...kulu.events.map(e => ({ ...e, kuluTitle: kulu.title || 'Untitled' })));
+        }
+      });
+
+      if (allEvents.length === 0) {
+        alert(`No event data found for ${publisherName}`);
+        return false; // signal that no report was rendered
+      }
+
+      const starts = allEvents.filter(e => (e.percentageViewed || 0) > 0).length;
+      const mid = allEvents.filter(e => (e.percentageViewed || 0) >= 50).length;
+      const complete = allEvents.filter(e => (e.percentageViewed || 0) >= 95).length;
+      const clicks = allEvents.length;
+
+      const avgPercent =
+        clicks > 0
+          ? Math.round(allEvents.reduce((sum, e) => sum + (e.percentageViewed || 0), 0) / clicks)
+          : 0;
+
+      const engagementScores = matchingKulus
+        .map(k => k.engagementQuality)
+        .filter(val => typeof val === 'number');
+
+      const avgEngagement =
+        engagementScores.length > 0
+          ? Math.round(engagementScores.reduce((a, b) => a + b, 0) / engagementScores.length)
+          : 'N/A';
+
+      const topVideos = matchingKulus
+        .filter(k => typeof k.engagementQuality === 'number')
+        .sort((a, b) => b.engagementQuality - a.engagementQuality)
+        .slice(0, 5);
+
+      const topVideosHtml = topVideos.length ? `
+      <div class="mt-6">
+      <h4 class="text-md font-semibold mb-2 text-gray-700">Top 5 Videos by Engagement</h4>
+      <div class="overflow-x-auto">
+      <table class="min-w-full text-sm border">
+      <thead class="bg-gray-100">
+      <tr>
+      <th class="px-3 py-1 border text-left">Title</th>
+      <th class="px-3 py-1 border text-center">Views</th>
+      <th class="px-3 py-1 border text-center">Engagement</th>
+      <th class="px-3 py-1 border text-center">Avg Duration</th>
+      </tr>
+      </thead>
+      <tbody>
+      ${topVideos.map(video => {
+        const views = video.reporting?.views ?? 0;
+        const engagement = Math.round(video.engagementQuality);
+        const durations = video.events?.map(e => e.durationViewed || 0) || [];
+        const avgDurationMs = durations.length
+          ? durations.reduce((a, b) => a + b, 0) / durations.length
+          : 0;
+        const mins = Math.floor(avgDurationMs / 60000);
+        const secs = Math.floor((avgDurationMs % 60000) / 1000);
+        const durationStr = `${mins}m ${secs}s`;
+        const titleLink = video.player
+          ? `<a href="${escapeHtml(video.player)}" target="_blank" class="text-blue-600 underline">${escapeHtml(video.title || 'Untitled')}</a>`
+          : escapeHtml(video.title || 'Untitled');
+
+        return `
+      <tr>
+      <td class="px-3 py-1 border text-left">${titleLink}</td>
+      <td class="px-3 py-1 border text-center">${views}</td>
+      <td class="px-3 py-1 border text-center">${engagement}</td>
+      <td class="px-3 py-1 border text-center">${durationStr}</td>
+      </tr>`;
+      }).join('')}
+      </tbody>
+      </table>
+      </div>
+      </div>
+      ` : '';
+
+      const containerId = `publisher-dashboard-${publisherName.replace(/\s+/g, '-').toLowerCase()}`;
+      const existing = document.getElementById(containerId);
+
+      if (existing) {
+        existing.classList.remove('hidden');
+        return;
+      }
+
+      const dashboardHtml = `
+      <div id="${containerId}" class="mt-4 border rounded bg-white shadow p-4">
+      <h3 class="text-lg font-semibold text-blue-800 mb-3">${escapeHtml(publisherName)} — Publisher Engagement</h3>
+      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center text-sm">
+      <div class="bg-gray-100 rounded p-2"><div class="text-gray-600">Clicks</div><div class="text-xl font-bold text-gray-800">${clicks}</div></div>
+      <div class="bg-blue-100 rounded p-2"><div class="text-gray-600">Starts</div><div class="text-xl font-bold text-blue-600">${starts}</div></div>
+      <div class="bg-yellow-100 rounded p-2"><div class="text-gray-600">&gt;50% Watched</div><div class="text-xl font-bold text-yellow-600">${mid}</div></div>
+      <div class="bg-green-100 rounded p-2"><div class="text-gray-600">Completed</div><div class="text-xl font-bold text-green-600">${complete}</div></div>
+      </div>
+      <div class="grid grid-cols-2 gap-4 mt-4 text-center text-sm">
+      <div class="bg-purple-100 rounded p-2"><div class="text-gray-600">Avg % Viewed</div><div class="text-xl font-bold text-purple-700">${avgPercent}%</div></div>
+      <div class="bg-indigo-100 rounded p-2"><div class="text-gray-600">Avg Engagement</div><div class="text-xl font-bold text-indigo-700">${avgEngagement}</div></div>
+      </div>
+      ${topVideosHtml}
+      </div>
+      `;
+
+      document.getElementById('result').insertAdjacentHTML('beforeend', dashboardHtml);
+    }
+
+
+    function calculateEngagementQuality(events) {
+      if (events.length < 10) return null; //  Skip low-sample scores
+
+      const totalPercent = events.reduce((sum, e) => sum + (e.percentageViewed || 0), 0);
+      const totalTime = events.reduce((sum, e) => sum + (e.durationViewed || 0), 0);
+
+      const avgPercent = totalPercent / events.length;
+      const avgTime = totalTime / events.length;
+
+      const estLength = Math.max(...events.map(e => e.durationViewed || 0), 1);
+
+      return parseFloat(((avgPercent * avgTime) / estLength).toFixed(2));
+    }
+
+
+    function createFolderDropdown(folders) {
+      const folderSelect = document.createElement('select');
+      folderSelect.id = 'folderSelect';
+      folderSelect.className = 'w-full border px-3 py-2 rounded';
+      const defaultOption = document.createElement('option');
+      defaultOption.value = '';
+      defaultOption.textContent = '-- Select Folder --';
+      folderSelect.appendChild(defaultOption);
+
+      folders.forEach(folder => {
+        const option = document.createElement('option');
+        option.value = folder.guid;
+        option.textContent = folder.title || 'Untitled Folder';
+        folderSelect.appendChild(option);
+      });
+
+      return folderSelect;
+    }
+
+
+
+    function createPlaylistDropdown(playlists) {
+      const playlistDropdown = document.createElement('select');
+      playlistDropdown.id = 'playlistSelect';
+      playlistDropdown.className = 'w-full border px-3 py-2 rounded';
+      const defaultOption = document.createElement('option');
+      defaultOption.value = '';
+      defaultOption.textContent = '-- Select Playlist --';
+      playlistDropdown.appendChild(defaultOption);
+
+      playlists.forEach(pl => {
+        const option = document.createElement('option');
+        option.value = pl.guid;
+        option.textContent = pl.title || 'Untitled Playlist';
+        playlistDropdown.appendChild(option);
+      });
+
+      return playlistDropdown;
+    }
+
+
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('username').value.trim();
+      const password = document.getElementById('password').value.trim();
+      const domain = document.getElementById('domain').value.trim();
+      const selectorsDiv = document.getElementById('selectors');
+      const spinner = document.getElementById('spinner');
+      const result = document.getElementById('result');
+
+      if (!domain || !username || !password) {
+        result.innerHTML = '<p class="text-red-600">Please fill in all fields.</p>';
+        return;
+      }
+
+      const cleanDomain = domain.replace(/^https?:\/\//, '').replace(/\/+$/, '');
+
+      activeApiCalls++;
+      toggleHidden(spinner, false);
+      selectorsDiv.textContent = 'Fetching folders...';
+      result.innerHTML = '';
+
+      try {
+        console.log('Attempting login with:', { username, domain: cleanDomain });
+        await validateCredentials(username, password, cleanDomain);
+
+        storedUsername = username;
+        storedPassword = password;
+        storedDomain = cleanDomain;
+
+        const credentials = btoa(`${username}:${password}`);
+        const url = `https://${cleanDomain}/api/2.2/rest/folders`;
+
+        const response = await fetch(url, {
+          headers: { 'Authorization': `Basic ${credentials}` }
+        });
+
+        if (!response.ok) {
+          const errorText = await response.text();
+          throw new Error(`Login failed: ${response.status} - ${errorText}`);
+        }
+
+        const data = await response.json();
+        console.log('📁 Folders API Response:', data);
+
+        if (!Array.isArray(data.folders)) {
+          selectorsDiv.textContent = 'Invalid response from server. Check console for details.';
+          console.error('Expected folders array, got:', data);
+          toggleHidden(document.getElementById('loginForm'), true);
+          toggleHidden(document.getElementById('reportForm'), false);
+          return;
+        }
+
+        foldersData = data.folders;
+        updateLoginStatus(true, cleanDomain, username);
+
+        // Save to localStorage
+        localStorage.setItem('qumuLogin', JSON.stringify({
+          domain: storedDomain,
+          username: storedUsername,
+          password: storedPassword
+        }));
+
+
+        if (foldersData.length === 0) {
+          selectorsDiv.textContent = 'No folders found.';
+          toggleHidden(document.getElementById('loginForm'), true);
+          toggleHidden(document.getElementById('reportForm'), false);
+          return;
+        }
+
+        // Create folder and playlist dropdowns
+        const folderSelect = createFolderDropdown(foldersData);
+        const folderLabel = document.createElement('label');
+        folderLabel.setAttribute('for', 'folderSelect');
+        folderLabel.className = 'block font-medium';
+        folderLabel.textContent = 'Select a folder:';
+
+        selectorsDiv.innerHTML = '';
+
+        // Add Kulu GUID input first
+        const guidLabel = document.createElement('label');
+        guidLabel.setAttribute('for', 'kuluGuidInput');
+        guidLabel.className = 'block font-medium';
+        guidLabel.textContent = 'Enter Presentation GUID:';
+
+        const guidInput = document.createElement('input');
+        guidInput.type = 'text';
+        guidInput.id = 'kuluGuidInput';
+        guidInput.placeholder = 'e.g. 8HczM5TfFxv or full URL';
+        guidInput.className = 'w-full mb-4 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring focus:ring-indigo-200';
+
+        guidInput.addEventListener('input', () => {
+          console.log('✏️ GUID input detected — clearing folder/playlist');
+
+          const folderSelect = document.getElementById('folderSelect');
+          const playlistSelect = document.getElementById('playlistSelect');
+
+          if (folderSelect) folderSelect.selectedIndex = 0;
+          if (playlistSelect) playlistSelect.selectedIndex = 0;
+
+          storedPlaylistGuid = '';
+        });
+
+
+
+
+        selectorsDiv.appendChild(guidLabel);
+        selectorsDiv.appendChild(guidInput);
+
+        // add folder select
+
+        folderLabel.setAttribute('for', 'folderSelect');
+        folderLabel.className = 'block font-medium';
+        folderLabel.textContent = 'Select a folder:';
+
+        selectorsDiv.appendChild(folderLabel);
+        selectorsDiv.appendChild(folderSelect);
+
+
+
+        folderSelect.addEventListener('change', function () {
+
+          const selectedGuid = this.value;
+          const selectedFolder = foldersData.find(f => f.guid === selectedGuid);
+          const playlistSelect = document.getElementById('playlistSelect');
+          if (playlistSelect) playlistSelect.remove();
+
+          if (!selectedFolder || !Array.isArray(selectedFolder.playlists) || selectedFolder.playlists.length === 0) {
+            storedPlaylistGuid = '';
+            return;
+          }
+
+          const playlistDropdown = createPlaylistDropdown(selectedFolder.playlists);
+          const playlistLabel = document.createElement('label');
+          playlistLabel.setAttribute('for', 'playlistSelect');
+          playlistLabel.className = 'block font-medium';
+          playlistLabel.textContent = 'Select a playlist:';
+
+          const existingLabel = selectorsDiv.querySelector('label[for="playlistSelect"]');
+          const existingDropdown = selectorsDiv.querySelector('#playlistSelect');
+          if (existingLabel) existingLabel.remove();
+          if (existingDropdown) existingDropdown.remove();
+
+          selectorsDiv.appendChild(playlistLabel);
+          selectorsDiv.appendChild(playlistDropdown);
+
+
+
+          playlistDropdown.addEventListener('change', function () {
+            storedPlaylistGuid = this.value;
+            console.log('🎞️ Selected Playlist GUID:', storedPlaylistGuid);
+            document.getElementById('limitWarning')?.classList.add('hidden');
+          });
+        });
+
+        toggleHidden(document.getElementById('loginForm'), true);
+        toggleHidden(document.getElementById('reportForm'), false);
+        result.innerHTML = '';
+
+        const today = new Date();
+        const oneYearAgo = new Date(today.getFullYear() - 1, today.getMonth(), today.getDate());
+        document.getElementById('startDate').value = oneYearAgo.toISOString().split('T')[0];
+        document.getElementById('endDate').value = today.toISOString().split('T')[0];
+      } catch (error) {
+        let message = 'An error occurred while connecting.';
+        if (error.message.includes('401')) {
+          message = 'Authentication failed. Please check your username and password.';
+        } else if (error.message.includes('Failed to fetch')) {
+          message = 'Could not connect to the server. Please check the domain and your network.';
+        } else {
+          message = error.message;
+        }
+
+        result.innerHTML = `<p class="text-red-600">Error: ${escapeHtml(message)}</p>`;
+        console.error('❌ Login error:', error);
+      } finally {
+        activeApiCalls--;
+        if (activeApiCalls <= 0) {
+          toggleHidden(spinner, true);
+          activeApiCalls = 0;
+        }
+      }
+    });
+
+
+
+
+    async function fetchKuluDetails(kuluGuid, startDate, rawEndDate, kuluTitle, thumbnailUrl, kuluObj) {
+
+      const limit = 5000;
+      let offset = 0;
+      let allEvents = [];
+      const maxPages = 50;
+      const spinner = document.getElementById('spinner');
+      const result = document.getElementById('result');
+      const chartContainer = document.getElementById('chartContainer');
+      const buttonArea = document.getElementById('buttonArea');
+
+      activeApiCalls++;
+      toggleHidden(spinner, false);
+      result.innerHTML = '';
+      toggleHidden(chartContainer, true);
+
+      try {
+        let pageNum = 0;
+        while (true) {
+          pageNum++;
+          updateStatusMessage(`Fetching page ${pageNum} of events...`);
+          const url = `https://${storedDomain}/api/2.2/rest/kulus/${kuluGuid}/reporting/events?startDate=${formatDateRFC1123(startDate)}&endDate=${formatDateRFC1123(rawEndDate, true)}&limit=${encodeURIComponent(limit)}&offset=${encodeURIComponent(offset)}`;
+          console.log('Fetching events from:', url);
+          const headers = new Headers({
+            'Authorization': 'Basic ' + btoa(`${storedUsername}:${storedPassword}`)
+          });
+          const response = await fetch(url, { headers });
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP error! Status: ${response.status} ${errorText}`);
+          }
+          const data = await response.json();
+          const events = Array.isArray(data.events) ? data.events : [];
+          allEvents = allEvents.concat(events);
+          if (events.length < limit) break;
+          offset += limit;
+          if (offset >= maxPages * limit) break;
+        }
+
+        clearStatusMessage();
+
+        if (allEvents.length === 0) {
+          result.innerHTML = '<p class="text-red-600">No viewing data found for this Presentation.</p>';
+          toggleHidden(buttonArea, false);
+          document.getElementById('backButton').classList.remove('hidden');
+          toggleHidden(document.getElementById('reportForm'), true);
+          return;
+        }
+
+
+        const totalPercentage = allEvents.reduce((sum, event) => sum + (event.percentageViewed || 0), 0);
+        const averagePercentage = allEvents.length > 0 ? (totalPercentage / allEvents.length).toFixed(2) : 0;
+        const totalDurationMs = allEvents.reduce((sum, e) => sum + (e.durationViewed || 0), 0);
+        const totalDurationFormatted = formatDuration(totalDurationMs);
+
+        const engagementQuality = calculateEngagementQuality(allEvents);
+        const engagementQualityDisplay = engagementQuality === null
+          ? 'N/A'
+          : Math.round(engagementQuality);
+
+
+        const bins = { '0-25': 0, '25-50': 0, '50-75': 0, '75-100': 0 };
+        const userTypes = { 'Guest': 0, 'Known User': 0 };
+        const hourlyEvents = Array(24).fill(0);
+        const deviceTypes = {};
+        const userViewCounts = {};
+        const engagementByDate = {};
+
+        allEvents.forEach(event => {
+          const percentage = event.percentageViewed || 0;
+          if (percentage <= 25) bins['0-25']++;
+          else if (percentage <= 50) bins['25-50']++;
+          else if (percentage <= 75) bins['50-75']++;
+          else bins['75-100']++;
+
+          const userName = event.user?.name?.trim() || 'Anonymous';
+          if (!userName || userName === 'Anonymous' || userName.toLowerCase() === 'guest') {
+            userTypes['Guest']++;
+          } else {
+            userTypes['Known User']++;
+          }
+
+          userViewCounts[userName] = (userViewCounts[userName] || 0) + 1;
+
+          if (event.time) {
+            const hour = new Date(event.time).getUTCHours();
+            hourlyEvents[hour]++;
+            const dateStr = new Date(event.time).toISOString().split('T')[0];
+            engagementByDate[dateStr] = (engagementByDate[dateStr] || 0) + 1;
+          }
+
+          const device = event.device?.device || 'Unknown';
+          deviceTypes[device] = (deviceTypes[device] || 0) + 1;
+        });
+
+
+        const deviceLabels = Object.keys(deviceTypes);
+        const deviceData = Object.values(deviceTypes);
+
+        chartContainer.innerHTML = `
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div><canvas id="percentageChart" class="w-full" style="max-height: 300px;"></canvas></div>
+        <div><canvas id="userTypeChart" class="w-full" style="max-height: 300px;"></canvas></div>
+         <div><canvas id="userViewsChart" class="w-full" style="max-height: 300px;"></canvas></div>
+        <div><canvas id="deviceTypeChart" class="w-full" style="max-height: 300px;"></canvas></div>
+        <div><canvas id="hourlyEngagementChart" class="w-full" style="max-height: 300px;"></canvas></div>
+        <div><canvas id="engagementOverTimeChart" class="w-full" style="max-height: 300px;"></canvas></div>
+      </div>
+
+      <div class="text-right mt-4">
+      <button onclick="downloadAsImageAndPDF()"
+      class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-gray-900">
+      Download Report
+      </button>
+      </div>
+      `;
+        toggleHidden(chartContainer, false);
+
+
+
+        const backButton = document.getElementById('backButton');
+        buttonArea.classList.remove('hidden');
+        backButton.classList.remove('hidden');
+
+
+        chartInstances.percentageChart = new Chart(document.getElementById('percentageChart'), {
+          type: 'bar',
+          data: {
+            labels: ['0-25%', '25-50%', '50-75%', '75-100%'],
+            datasets: [{
+              label: 'Number of Views',
+              data: [bins['0-25'], bins['25-50'], bins['50-75'], bins['75-100']],
+              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+            }]
+          },
+          options: {
+            plugins: { title: { display: true, text: 'Percentage Viewed Distribution' }, legend: { display: false } },
+            scales: { y: { beginAtZero: true }, x: { title: { display: true, text: 'Percent Watched' } } },
+            responsive: true,
+            maintainAspectRatio: false
+          }
+        });
+
+        chartInstances.userTypeChart = new Chart(document.getElementById('userTypeChart'), {
+          type: 'pie',
+          data: {
+            labels: ['Guest', 'Authenticated'],
+            datasets: [{
+              data: [userTypes['Guest'], userTypes['Known User']],
+              backgroundColor: ['#FF6384', '#36A2EB']
+            }]
+          },
+          options: {
+            plugins: { title: { display: true, text: 'Guest vs Authenticated Views' } },
+            responsive: true,
+            maintainAspectRatio: false
+          }
+        });
+
+
+        const sortedUserEntries = Object.entries(userViewCounts)
+          .sort((a, b) => b[1] - a[1])
+          .slice(0, 10);
+        const topUsers = sortedUserEntries.map(e => e[0]);
+        const topUsersViews = sortedUserEntries.map(e => e[1]);
+
+        chartInstances.userViewsChart = new Chart(document.getElementById('userViewsChart'), {
+          type: 'bar',
+          data: {
+            labels: topUsers,
+            datasets: [{
+              label: 'Number of Views',
+              data: topUsersViews,
+              backgroundColor: '#8e44ad'
+            }]
+          },
+          options: {
+            plugins: { title: { display: true, text: 'Top 10 Viewers' }, legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, ticks: { precision: 0 }, title: { display: true, text: 'Views' } },
+              x: { title: { display: true, text: '' } }
+            },
+            responsive: true,
+            maintainAspectRatio: false
+          }
+        });
+
+        chartInstances.deviceTypeChart = new Chart(document.getElementById('deviceTypeChart'), {
+          type: 'pie',
+          data: {
+            labels: deviceLabels,
+            datasets: [{
+              data: deviceData,
+              backgroundColor: ['#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0']
+            }]
+          },
+          options: {
+            plugins: { title: { display: true, text: 'Device Type Distribution' } },
+            responsive: true,
+            maintainAspectRatio: false
+          }
+        });
+
+
+
+        chartInstances.hourlyEngagementChart = new Chart(document.getElementById('hourlyEngagementChart'), {
+          type: 'line',
+          data: {
+            labels: Array.from({ length: 24 }, (_, i) => String(i).padStart(2, '0')),
+            datasets: [{ label: 'Views per Hour', data: hourlyEvents, borderColor: '#2ecc71', backgroundColor: '#2ecc71' }]
+          },
+          options: {
+            plugins: { title: { display: true, text: 'User Engagement by Hour' }, legend: { display: false } },
+            scales: {
+              y: { beginAtZero: true, ticks: { precision: 0 } },
+              x: { title: { display: true, text: 'Hour (UTC)' } }
+            },
+            responsive: true,
+            maintainAspectRatio: false
+          }
+        });
+
+
+
+        const sortedDates = Object.keys(engagementByDate).sort();
+        const engagementCounts = sortedDates.map(date => engagementByDate[date]);
+
+        chartInstances.engagementOverTimeChart = new Chart(document.getElementById('engagementOverTimeChart'), {
+          type: 'line',
+          data: {
+            labels: sortedDates,
+            datasets: [{
+              label: '',
+              data: engagementCounts,
+              fill: false,
+              borderColor: '#2ecc71',
+              tension: 0.2,
+              pointRadius: 3
+            }]
+          },
+          options: {
+            plugins: {
+              legend: {
+                display: false
+              },
+              title: {
+                display: true,
+                text: 'Engagement over Time',
+                font: {
+                  size: 12
+                },
+                padding: {
+                  top: 10,
+                  bottom: 20
+                }
+              },
+              tooltip: {
+                callbacks: {
+                  label: function (context) {
+                    return context.parsed.y;
+                  }
+                }
+              }
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  precision: 0  //  This ensures whole numbers only
+                }
+              }
+            }
+          }
+        });
+
+
+
+
+
+        //  Build user journeys from allEvents
+
+        function buildUserJourneys(eventsByKuluTitle) {
+          const journeys = {};
+
+          for (const [kuluTitle, events] of Object.entries(eventsByKuluTitle)) {
+            for (const event of events) {
+              const rawName = event.user?.name?.trim();
+              const user = rawName || 'Anonymous';
+              if (!rawName || /anonymous|guest/i.test(user)) continue;
+
+              if (!journeys[user]) journeys[user] = [];
+              journeys[user].push({
+                title: kuluTitle,
+                time: new Date(event.time),
+                percentage: event.percentageViewed || 0,
+                durationMs: event.durationViewed || 0
+              });
+            }
+          }
+
+          // Only keep top 100 most active users
+          const sortedUsers = Object.entries(journeys)
+            .sort((a, b) => b[1].length - a[1].length)
+            .slice(0, 100);
+
+          const trimmedJourneys = {};
+          for (const [user, steps] of sortedUsers) {
+            trimmedJourneys[user] = steps.sort((a, b) => a.time - b.time);
+          }
+
+          return trimmedJourneys;
+        }
+
+
+        const eventsByKuluTitle = {};
+        for (const event of allEvents) {
+          const title = kuluTitle; // available from function parameter
+          if (!eventsByKuluTitle[title]) eventsByKuluTitle[title] = [];
+          eventsByKuluTitle[title].push(event);
+        }
+        const userJourneys = buildUserJourneys(eventsByKuluTitle);
+        window.lastUserJourneyData = userJourneys;
+
+        function renderUserJourneySection(userJourneys) {
+          let html = `
+      <div class="mt-8">
+      <h3 class="text-xl font-semibold mb-3 text-gray-800">Authenticated User Timeline</h3>
+      <div class="space-y-4 max-h-[400px] overflow-y-auto pr-2">
+      `;
+
+          for (const [user, journey] of Object.entries(userJourneys)) {
+            html += `<details class="border border-gray-200 rounded-md p-3">
+      <summary class="font-medium cursor-pointer text-blue-700">${escapeHtml(user)} (${journey.length} interactions)</summary>
+      <ul class="mt-2 list-disc ml-6 text-sm text-gray-800">`;
+
+            for (const step of journey) {
+              const timeStr = step.time.toLocaleString('en-GB', {
+                day: '2-digit', month: 'short', year: 'numeric',
+                hour: '2-digit', minute: '2-digit'
+              });
+              const mins = Math.floor(step.durationMs / 1000 / 60);
+              const secs = Math.floor((step.durationMs / 1000) % 60);
+              html += `<li>
+      <span class="text-gray-600">${timeStr}</span> —
+      Viewed <strong>${escapeHtml(step.title)}</strong>
+      (${step.percentage}% for ${mins}m ${secs}s)
+      </li>`;
+            }
+
+            html += `</ul></details>`;
+          }
+
+          html += `
+      <button onclick="downloadUserJourneysCSV()"
+      class="mt-4 bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition">
+      Download CSV
+      </button>
+      </div></div>`;
+
+          return html;
+
+        }
+
+        const formatRangeDate = (dateStr) => {
+          const d = new Date(dateStr);
+          return d.toLocaleDateString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+          });
+        };
+
+
+        let html = `
+  <div class="mb-4 flex justify-between items-start flex-wrap gap-2">
+    <div>
+      <h3 class="text-xl font-semibold mb-2">${escapeHtml(kuluTitle)}</h3>
+      <div class="text-xl font-semibold mb-2">
+        Publisher: ${escapeHtml(kuluObj?.publisher?.name || 'Unknown')}
+      </div>
+
+      ${kuluObj?.thumbnail?.url && kuluObj?.player ? `
+        <img src="${escapeHtml(kuluObj.thumbnail.url)}" alt="Thumbnail"
+             class="w-[200px] rounded shadow-xl cursor-pointer"
+             onclick="openModal('${escapeHtml(kuluObj.player)}')" />
+      ` : '<p class="text-gray-500">No thumbnail available</p>'}
+    </div>
+
+    <div class="text-sm text-gray-700 text-right">
+      <div class="font-medium text-gray-500">Report for Period</div>
+      <div><span class="font-semibold">${formatRangeDate(startDate)}</span> to <span class="font-semibold">${formatRangeDate(rawEndDate)}</span></div>
+    </div>
+  </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-4">
+
+        <div class="bg-blue-100 text-center rounded p-3">
+      	<div class="text-sm text-gray-600">Average % Viewed</div>
+         <div class="text-2xl font-bold text-blue-600">${Math.round(averagePercentage)}%</div>
+        </div>
+
+
+      <div class="bg-purple-100 text-center rounded p-3">
+      <div class="text-sm text-gray-600">Engagement Quality</div>
+      <div class="text-2xl font-bold text-purple-600">${engagementQualityDisplay}</div>
+
+      </div>
+
+
+        <div class="bg-green-100 text-center rounded p-3">
+      	<div class="text-sm text-gray-600">Total Views</div>
+      	<div class="text-2xl font-bold text-green-500">${allEvents.length}</div>
+        </div>
+        <div class="bg-yellow-100 text-center rounded p-3">
+      	<div class="text-sm text-gray-600">Total Viewing Time</div>
+      	<div class="text-xl font-bold text-yellow-600">${totalDurationFormatted}</div>
+        </div>
+      </div>
+
+
+      <div class="flex flex-wrap sm:flex-nowrap justify-between items-center gap-4 mb-4 text-center">
+
+      <div class="flex-1 bg-gray-100 rounded p-3 shadow">
+      <div class="text-sm text-gray-600">Clicks</div>
+      <div id="funnelClicks" class="text-2xl font-bold text-gray-800">—</div>
+      </div>
+
+      <div class="text-3xl text-gray-400">→</div>
+
+      <div class="flex-1 bg-blue-100 rounded p-3 shadow">
+      <div class="text-sm text-gray-600">Video Starts</div>
+      <div id="funnelStarts" class="text-2xl font-bold text-blue-600">—</div>
+      </div>
+
+      <div class="text-3xl text-gray-400">→</div>
+
+      <div class="flex-1 bg-yellow-100 rounded p-3 shadow">
+      <div class="text-sm text-gray-600">&gt;50% Watched</div>
+      <div id="funnelMidWatch" class="text-2xl font-bold text-yellow-600">—</div>
+      </div>
+
+      <div class="text-3xl text-gray-400">→</div>
+
+      <div class="flex-1 bg-green-100 rounded p-3 shadow">
+      <div class="text-sm text-gray-600">Watched to End</div>
+      <div id="funnelWatchedEnd" class="text-2xl font-bold text-green-600">—</div>
+      </div>
+      </div>
+
+      <div id="eventTableWrapper" class="max-h-[40vh] overflow-y-auto relative">
+
+
+        <table class="min-w-full table-fixed border-separate border-spacing-0">
+      	<thead class="sticky top-0 bg-gray-200 z-10">
+      	  <tr>
+      	  <th class="px-4 py-2 border-b text-center">User</th>
+      		<th class="px-2 py-2 border-b cursor-pointer select-none text-center" id="sortTimestamp">Date/Time <span id="timestampArrow" class="inline-block ml-1">▼</span></th>
+      		<th class="px-2 py-2 border-b text-center">Device</th>
+      		<th class="px-4 py-2 border-b text-right cursor-pointer" id="sortPercentage">Viewed % <span id="sortArrow" class="inline-block ml-1">▼</span></th>
+      		<th class="px-4 py-2 border-b">Duration Viewed</th>
+      	  </tr>
+      	</thead>
+      	<tbody>
+      `;
+
+        allEvents.forEach(event => {
+          console.log('Processing event:', event);
+          html += `<tr>
+      	
+		<td class="px-2 py-2 border-b text-center">${escapeHtml(event.user?.name || 'Anonymous')}</td>
+
+      <td class="px-2 py-2 border-b text-center">${event.time
+              ? (() => {
+                const d = new Date(event.time);
+                return d.toLocaleDateString('en-GB', {
+                  day: '2-digit',
+                  month: 'short',
+                  year: 'numeric'
+                }) + ' ' + d.toLocaleTimeString('en-GB', {
+                  hour: '2-digit',
+                  minute: '2-digit',
+                  hour12: false
+                });
+              })()
+              : 'N/A'
+            }</td>
+
+      	<td class="px-4 py-2 border-b text-center">${escapeHtml(event.device?.device || 'Unknown')}</td>
+      	<td class="px-4 py-2 border-b text-right">${event.percentageViewed || 0}%</td>
+      	<td class="px-4 py-2 border-b text-right w-24">${event.durationViewed
+              ? (() => {
+                const totalSeconds = Math.round(event.durationViewed / 1000);
+                const minutes = Math.floor(totalSeconds / 60);
+                const seconds = totalSeconds % 60;
+                return `${minutes}m ${seconds}s`;
+              })()
+              : '0m 0s'
+            }</td>
+        </tr>`;
+        });
+
+        html += `</tbody></table></div>
+
+      <div id="eventExportButton" class="text-right mt-2 hidden">
+      <button onclick="downloadEventTableCSV()"
+      class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+      Export Event Table as CSV
+      </button>
+      </div>
+      `;
+
+
+        result.classList.remove('hidden');
+        result.innerHTML = '';
+        result.innerHTML = html;
+
+
+
+        // Funnel data
+        const clicks = allEvents.length;
+        const starts = allEvents.filter(e => (e.percentageViewed || 0) > 0).length;
+        const midWatch = allEvents.filter(e => (e.percentageViewed || 0) >= 50).length;
+        const watchedEnd = allEvents.filter(e => (e.percentageViewed || 0) >= 95).length;
+
+        //  Populate funnel boxes
+        document.getElementById('funnelClicks').textContent = clicks;
+        document.getElementById('funnelStarts').textContent = starts;
+        document.getElementById('funnelMidWatch').textContent = midWatch;
+        document.getElementById('funnelWatchedEnd').textContent = watchedEnd;
+
+        const tableWrapper = document.getElementById('eventTableWrapper');
+        const hideCheckbox = document.getElementById('hideEventTable');
+        const exportBtn = document.getElementById('eventExportButton');
+
+
+        if (tableWrapper && hideCheckbox && exportBtn) {
+          const applyTableVisibility = () => {
+            const show = hideCheckbox.checked;
+            tableWrapper.classList.toggle('hidden', !show);
+            exportBtn.classList.toggle('hidden', !show);
+          };
+
+
+
+          hideCheckbox.addEventListener('change', applyTableVisibility);
+          applyTableVisibility();
+        }
+
+
+        const includeJourney = document.getElementById('includeUserJourney')?.checked;
+        if (includeJourney) {
+          const journeyHtml = renderUserJourneySection(userJourneys);
+          result.innerHTML += journeyHtml;
+        }
+
+        let sortAscending = true;
+        document.getElementById('sortPercentage')?.addEventListener('click', () => {
+          const rows = Array.from(document.querySelectorAll('#result tbody tr'));
+          rows.sort((a, b) => {
+            const aVal = parseFloat(a.cells[3].textContent) || 0;
+            const bVal = parseFloat(b.cells[3].textContent) || 0;
+            return sortAscending ? aVal - bVal : bVal - aVal;
+          });
+          const tbody = document.querySelector('#result tbody');
+          rows.forEach(row => tbody.appendChild(row));
+          const arrow = document.getElementById('sortArrow');
+          sortAscending = !sortAscending;
+          arrow.textContent = sortAscending ? '▼' : '▲';
+        });
+
+        let timestampSortAscending = false;
+        document.getElementById('sortTimestamp')?.addEventListener('click', () => {
+          const rows = Array.from(document.querySelectorAll('#result tbody tr'));
+          rows.sort((a, b) => {
+            const aTime = new Date(a.cells[1].textContent).getTime() || 0;
+            const bTime = new Date(b.cells[1].textContent).getTime() || 0;
+            return timestampSortAscending ? aTime - bTime : bTime - aTime;
+          });
+          const tbody = document.querySelector('#result tbody');
+          rows.forEach(row => tbody.appendChild(row));
+          const arrow = document.getElementById('timestampArrow');
+          timestampSortAscending = !timestampSortAscending;
+          arrow.textContent = timestampSortAscending ? '▼' : '▲';
+        });
+
+        //   toggleHidden(buttonArea, true);
+        document.getElementById('backButton').classList.remove('hidden');
+        toggleHidden(document.getElementById('reportForm'), true);
+
+      } catch (error) {
+        console.error('Error in fetchKuluDetails:', error);
+        result.innerHTML = `<p class="text-red-600">Error: ${escapeHtml(error.message)}</p>`;
+        toggleHidden(buttonArea, true);
+        clearStatusMessage();
+      } finally {
+        activeApiCalls--;
+        if (activeApiCalls <= 0) {
+          toggleHidden(spinner, true);
+          activeApiCalls = 0;
+        }
+      }
+    }
+
+
+    function updateStatusMessage(message) {
+      const statusEl = document.getElementById('statusMessage');
+      if (statusEl) {
+        statusEl.textContent = message;
+        statusEl.classList.remove('hidden');
+      }
+    }
+    function clearStatusMessage() {
+      const statusEl = document.getElementById('statusMessage');
+      if (statusEl) {
+        statusEl.textContent = '';
+        statusEl.classList.add('hidden');
+      }
+    }
+
+
+
+
+
+    function attachResultClickListener() {
+      document.getElementById('result').addEventListener('click', async e => {
+        const kuluGuid = e.target.getAttribute('data-kulu-guid');
+        const kuluObj = currentKuluData.find(k => k.guid === kuluGuid);
+        const kuluTitle = kuluObj?.title?.trim() || 'Untitled';
+        const thumbnailUrl = kuluObj?.thumbnail?.url || '';
+
+        console.log('🎯 Title from currentKuluData:', kuluTitle);
+
+        if (kuluGuid && (e.target.classList.contains('kulu-link') || e.target.classList.contains('kulu-details'))) {
+          if (!kuluObj) {
+            console.error('Kulu GUID not found in currentKuluData:', kuluGuid);
+            return;
+          }
+
+          e.target.disabled = true;
+          try {
+            await fetchKuluDetails(kuluGuid, storedStartDate, storedEndDate, kuluTitle, thumbnailUrl, kuluObj);
+          } finally {
+            e.target.disabled = false;
+          }
+        } else if (!kuluGuid && (e.target.classList.contains('kulu-link') || e.target.classList.contains('kulu-details'))) {
+          document.getElementById('result').innerHTML = `<p class="text-red-600">Error: Kulu GUID not found for "${escapeHtml(e.target.textContent || 'Unknown')}".</p>`;
+          console.error(`Missing Kulu GUID for: ${e.target.textContent}`);
+        }
+      });
+    }
+
+
+
+
+    attachResultClickListener();
+
+    document.getElementById('reportForm').addEventListener('submit', async e => {
+      e.preventDefault();
+
+      const username = storedUsername;
+      const password = storedPassword;
+      const apiBaseUrl = `https://${storedDomain}`;
+      const credentials = btoa(`${username}:${password}`);
+
+
+      // Support for manual Kulu GUID entry
+      const guidInputRaw = document.getElementById('kuluGuidInput')?.value?.trim();
+      const startDate = document.getElementById('startDate').value;
+      const endDate = document.getElementById('endDate').value;
+
+      if (guidInputRaw) {
+        const match = guidInputRaw.match(/\b[a-zA-Z0-9]{11,22}\b/);
+        const extractedGuid = match ? match[0] : null;
+
+        if (extractedGuid) {
+          const result = document.getElementById('result');
+          const buttonArea = document.getElementById('buttonArea');
+
+          try {
+            const videoObj = await fetchSingleKulu(extractedGuid, apiBaseUrl, credentials);
+            const kulu = videoObj?.kulu;
+
+            if (!kulu) {
+              result.innerHTML = `<p class="text-red-600">No video found for GUID: ${extractedGuid}</p>`;
+              return;
+            }
+
+            // Store and process
+
+            storedStartDate = startDate;
+            storedEndDate = endDate;
+            currentKuluData = [kulu];
+
+            await fetchKuluEvents(kulu, apiBaseUrl, credentials, startDate, endDate);
+            processEventDataForSummary(kulu);
+
+            // Build table header
+            result.innerHTML = `
+        <div id="renderProgress" class="text-sm text-gray-600 mb-2">Rendering rows...</div>
+        <div class="overflow-x-auto">
+          <table class="min-w-full border text-sm text-left" aria-label="Qumu Engagement Report">
+            <thead><tr class="bg-blue-100">
+              <th class="px-4 py-2 border">Title</th>
+              <th class="px-4 py-2 border text-center">Views</th>
+              <th class="px-4 py-2 border text-center" title="Blend of % viewed and time watched normalized by video length">Engagement Quality (0-100)</th>
+              <th class="px-4 py-2 border text-center">Engagement Report</th>
+              <th class="px-4 py-2 border text-center"><input type="checkbox" id="selectAllRows" /></th>
+            </tr></thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      `;
+
+            renderRowsInChunks(currentKuluData, 500);
+            attachResultClickListener();
+
+            toggleHidden(document.getElementById('reportForm'), false);
+            toggleHidden(buttonArea, true);
+          } catch (err) {
+            console.error(`❌ Error processing GUID ${extractedGuid}:`, err);
+            result.innerHTML = `<p class="text-red-600">Error retrieving analytics for GUID: ${extractedGuid}</p>`;
+          }
+
+          return; // prevent playlist/folder logic
+        }
+      }
+
+
+      destroyCharts();
+      currentKuluData = [];
+      const result = document.getElementById('result');
+      const chartContainer = document.getElementById('chartContainer');
+      const buttonArea = document.getElementById('buttonArea');
+      const backButton = document.getElementById('backButton');
+      const spinner = document.getElementById('spinner');
+
+      result.innerHTML = '';
+      chartContainer.innerHTML = '';
+      toggleHidden(chartContainer, true);
+      activeApiCalls++;
+      toggleHidden(spinner, false);
+      updateStatusMessage(`Fetching playlist data (0%)...`);
+
+      storedStartDate = document.getElementById('startDate').value;
+      storedEndDate = document.getElementById('endDate').value;
+      const sortByViews = document.getElementById('sortByViews').checked;
+
+      if (!storedPlaylistGuid || !storedStartDate || !storedEndDate) {
+        result.innerHTML = '<p class="text-red-600">Error: Please select a playlist and fill in all date fields.</p>';
+        toggleHidden(spinner, true);
+        activeApiCalls = 0;
+        return;
+      }
+
+      if (new Date(storedEndDate) < new Date(storedStartDate)) {
+        result.innerHTML = '<p class="text-red-600">Error: End date must be after start date.</p>';
+        toggleHidden(spinner, true);
+        activeApiCalls = 0;
+        return;
+      }
+
+
+      const headers = new Headers({
+        'Authorization': 'Basic ' + btoa(`${storedUsername}:${storedPassword}`)
+      });
+
+
+      const limit = 50; //How many presentations at a time
+      //  const maxTotal = 200; // Total Presentions to get
+
+      const presentationLimitSelect = document.getElementById('presentationLimit');
+      const maxTotal = parseInt(presentationLimitSelect?.value || '100', 10); // Default to 100
+
+
+      let offset = 0;
+      let pageCount = 0;
+      let fetchedKulus = [];
+
+      try {
+        while (true) {
+          const percent = Math.round((offset / maxTotal) * 100);
+          updateStatusMessage(`Fetching playlist data (${percent}%) - offset ${offset}...`);
+
+          const url = `https://${storedDomain}/api/2.2/rest/playlists/${storedPlaylistGuid}/kulus/reporting/views?startDate=${formatDateRFC1123(storedStartDate)}&endDate=${formatDateRFC1123(storedEndDate, true)}&limit=${limit}&offset=${offset}`;
+
+          const response = await fetch(url, { headers });
+          if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP error! Status: ${response.status} ${errorText}`);
+          }
+
+          const data = await response.json();
+          const chunk = Array.isArray(data.kulus) ? data.kulus : [];
+
+          const totalAvailable = data.total || chunk.length;
+          const presentationLimit = parseInt(presentationLimitSelect?.value || '100', 10);
+          const limitWarningEl = document.getElementById('limitWarning');
+          const limitValueEl = document.getElementById('limitValue');
+
+          if (totalAvailable > presentationLimit) {
+            limitValueEl.textContent = presentationLimit;
+            limitWarningEl.classList.remove('hidden');
+          } else {
+            limitWarningEl.classList.add('hidden');
+          }
+
+
+          if (chunk.length === 0) break;
+
+          fetchedKulus = fetchedKulus.concat(chunk);
+          offset += limit;
+          pageCount++;
+
+          if (chunk.length < limit || offset >= maxTotal || pageCount >= 40) break;
+        }
+
+        clearStatusMessage();
+
+
+        if (fetchedKulus.length === 0) {
+          result.innerHTML = '<p class="text-red-600">No data found for this playlist and date range.</p>';
+          toggleHidden(buttonArea, true);
+          return;
+        }
+
+        for (const kulu of fetchedKulus) {
+          if (!kulu.guid) continue;
+
+          const eventUrl = `https://${storedDomain}/api/2.2/rest/kulus/${kulu.guid}/reporting/events?startDate=${formatDateRFC1123(storedStartDate)}&endDate=${formatDateRFC1123(storedEndDate)}&limit=1000&offset=0`;
+          try {
+            const response = await fetch(eventUrl, { headers });
+            if (response.ok) {
+              const data = await response.json();
+              const events = Array.isArray(data.events) ? data.events : [];
+
+              kulu.events = events;
+
+              kulu.engagementQuality = calculateEngagementQuality(events);
+            } else {
+              kulu.engagementQuality = null;
+              console.warn(`Failed to fetch events for ${kulu.guid}`);
+            }
+          } catch (err) {
+            kulu.engagementQuality = null;
+            console.error(`Error fetching events for ${kulu.guid}:`, err);
+          }
+        }
+
+        currentKuluData = fetchedKulus;
+
+        const sortByViews = document.getElementById('sortByViews')?.checked;
+        const sortByEngagement = document.getElementById('sortByEngagement')?.checked;
+
+        if (sortByEngagement) {
+          fetchedKulus.sort((a, b) => (b.engagementQuality || 0) - (a.engagementQuality || 0));
+        } else if (sortByViews) {
+          fetchedKulus.sort((a, b) => (b?.reporting?.views || 0) - (a?.reporting?.views || 0));
+        }
+
+
+        let html = `
+      <div class="overflow-x-auto">
+      <table class="min-w-full border text-sm text-left" aria-label="Qumu Viewing Report">
+      <thead>
+      <tr class="bg-blue-100">
+      <th class="px-4 py-2 border">Title</th>
+      <th class="px-4 py-2 border">Views</th>
+      <th class="px-4 py-2 border" title="Blend of % viewed and time watched normalized by video length">Engagement Quality (0-100)</th>
+      <th class="px-4 py-2 border">Engagement Report</th>
+      <th class="px-4 py-2 border text-center">
+      <input type="checkbox" id="selectAllCheckbox" title="Select All" />
+      </th>
+      </tr>
+      </thead>
+      <tbody>
+      `;
+
+
+        let count = 0;
+
+
+        // Build HTML string in memory
+        const rows = currentKuluData.map(kulu => {
+          const kuluGuid = kulu.guid;
+          const hasKuluGuid = !!kuluGuid;
+          const rawScore = kulu.engagementQuality;
+          let scoreCell;
+
+          if (rawScore === null || rawScore === undefined) {
+            scoreCell = `<td class="px-4 py-2 border text-center text-gray-400 italic" title="Fewer than 10 views — score not calculated">N/A</td>`;
+          } else {
+            const score = Math.round(rawScore);
+            const scoreClass = score > 70 ? 'text-green-600 font-semibold'
+              : score > 40 ? 'text-yellow-600'
+                : 'text-gray-600';
+            scoreCell = `<td class="px-4 py-2 border text-center ${scoreClass}">${score}</td>`;
+          }
+
+
+          return `<tr>
+      <td class="px-4 py-2 border">
+      <a class="text-blue-600 underline kulu-link" href="${escapeHtml(kulu.player || '#')}"
+      data-kulu-guid="${escapeHtml(kulu.guid || '')}" target="_blank">
+      ${escapeHtml(kulu.title || 'Untitled')}
+      </a>
+      </td>
+      <td class="px-4 py-2 border text-center">${kulu.reporting?.views ?? 0}</td>
+      ${scoreCell}
+      <td class="px-4 py-2 border text-center">${kulu.guid
+              ? `<button class="kulu-details bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition"
+       data-kulu-guid="${kulu.guid}" aria-label="View event details">View Report</button>`
+              : '<span class="text-gray-500" title="No Kulu events found.">N/A</span>'
+            }</td>
+      </tr>`;
+
+        }).join('');
+
+
+        result.innerHTML = `
+      <div id="renderProgress" class="text-lg font-semibold mb-2 text-gray-800">Rendering rows...</div>
+      <div class="overflow-x-auto">
+      <table class="min-w-full border text-sm text-left" aria-label="Qumu Engagement Report">
+      <thead>
+      <tr class="bg-blue-100">
+      <th class="px-4 py-2 border">Title</th>
+      <th class="px-4 py-2 border text-center">Views</th>
+      <th class="px-4 py-2 border text-center" title="Blend of % viewed and time watched normalized by video length">
+      Engagement Quality (0-100)
+      </th>
+      <th class="px-4 py-2 border text-center">Engagement Report</th>
+      <th class="px-4 py-2 border text-center">
+      <input type="checkbox" id="selectAllRows" title="Select All" />
+      </th>
+      </tr>
+      </thead>
+      <tbody></tbody>
+      </table>
+      </div>
+      `;
+
+        renderRowsInChunks(currentKuluData, 500);
+
+        toggleHidden(buttonArea, true);
+      } catch (error) {
+        console.error('Error in reportForm submit:', error);
+        result.innerHTML = `<p class="text-red-600">Error: ${escapeHtml(error.message)}</p>`;
+        toggleHidden(buttonArea, true);
+      } finally {
+        activeApiCalls--;
+        if (activeApiCalls <= 0) {
+          toggleHidden(spinner, true);
+          activeApiCalls = 0;
+        }
+        clearStatusMessage();
+      }
+    });
+
+
+    document.getElementById('backButton').addEventListener('click', () => {
+      document.getElementById('kuluGuidInput').value = '';
+      if (!currentKuluData.length) return;
+
+      destroyCharts();
+      const chartContainer = document.getElementById('chartContainer');
+      chartContainer.innerHTML = '';
+      toggleHidden(chartContainer, true);
+      toggleHidden(document.getElementById('backButton'), true);
+      toggleHidden(document.getElementById('reportForm'), false);
+
+      let html = `
+      <div class="overflow-x-auto">
+      <table class="min-w-full border text-sm text-left" aria-label="Qumu Engagement Report">
+      <thead>
+      <tr class="bg-blue-100">
+      <th class="px-4 py-2 border">Title</th>
+      <th class="px-4 py-2 border text-center">Views</th>
+      <th class="px-4 py-2 border text-center" title="Blend of % viewed and time watched normalized by video length">Engagement Quality (0-100)</th>
+      <th class="px-4 py-2 border text-center">Engagement Report</th>
+      <th class="px-4 py-2 border text-center">
+      <input type="checkbox" id="selectAllCheckbox" title="Select All" />
+      </th>
+      </tr>
+      </thead>
+      <tbody>
+      `;
+      currentKuluData.forEach(kulu => {
+        const kuluGuid = kulu.guid;
+        const hasKuluGuid = !!kuluGuid;
+
+        const score = kulu.engagementQuality ?? 0;
+        const scoreClass = score > 0.7 ? 'text-green-600 font-semibold'
+          : score > 0.4 ? 'text-yellow-600'
+            : 'text-gray-600';
+
+        html += `<tr>
+      <td class="px-4 py-2 border"><a class="text-blue-600 underline kulu-link" href="${escapeHtml(kulu.player || '#')}" data-kulu-guid="${escapeHtml(kulu.guid || '')}" target="_blank">${escapeHtml(kulu.title || 'Untitled')}</a></td>
+      <td class="px-4 py-2 border text-center">${kulu.reporting?.views ?? 0}</td>
+      <td class="px-4 py-2 border text-center ${scoreClass}">${Math.round(score)}</td>
+
+      <td class="px-4 py-2 border text-center">${kulu.guid
+            ? `<button class="kulu-details bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition" data-kulu-guid="${kulu.guid}">View Report</button>`
+            : '<span class="text-gray-500" title="No Kulu events found.">N/A</span>'
+          }</td>
+
+      <td class="px-4 py-2 border text-center">
+      <input type="checkbox" class="kulu-checkbox" data-guid="${escapeHtml(kulu.guid || '')}" />
+      </td>
+      </tr>`;
+
+
+      });
+      html += '</tbody></table></div>';
+
+      document.getElementById('result').innerHTML = html;
+
+      // Re-add download buttons
+      const downloadBtn = document.createElement('div');
+      downloadBtn.className = 'mt-4';
+      downloadBtn.innerHTML = `
+      <button id="downloadSelectedBtn"
+      class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700 transition mr-2">
+      Download Canonical Files
+      </button>
+      <button id="downloadCsvBtn"
+      class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
+      Export Canonical URLs as CSV
+      </button>
+      `;
+      document.getElementById('result').appendChild(downloadBtn);
+      renderPublisherSummaryTable(currentKuluData);
+      toggleHidden(document.getElementById('buttonArea'), true);
+    });
+
+    document.getElementById('closeModal').addEventListener('click', () => {
+      const modal = document.getElementById('videoModal');
+      const iframe = document.getElementById('videoIframe');
+      if (iframe) iframe.src = '';
+      modal.classList.add('hidden');
+    });
+
+    window.addEventListener('keydown', e => {
+      if (e.key === 'Escape') document.getElementById('closeModal').click();
+    });
+
+
+    function downloadUserJourneysCSV() {
+      let csv = 'User,DateTime (Local),Video Title,Percentage Viewed,Duration Viewed (sec)\n';
+
+      for (const [user, journey] of Object.entries(window.lastUserJourneyData || {})) {
+        for (const step of journey) {
+          const dateObj = step.time;
+          const formattedTime = dateObj.toLocaleString('en-GB', {
+            day: '2-digit',
+            month: 'short',
+            year: 'numeric',
+            hour: '2-digit',
+            minute: '2-digit',
+            hour12: false
+          }).replace(',', '');
+
+          const durationSec = Math.round(step.durationMs / 1000);
+          csv += `"${user}","${formattedTime}","${step.title}",${step.percentage},${durationSec}\n`;
+        }
+      }
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'user_journeys.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+
+    async function fetchKuluEvents(kulu, apiBaseUrl, credentials, startDate, endDate) {
+      const headers = {
+        Authorization: `Basic ${credentials}`,
+        'Content-Type': 'application/json',
+      };
+
+      const baseUrl = `${apiBaseUrl}/api/2.2/rest/kulus/${kulu.guid}/reporting/events`;
+      const limit = 1000;
+      let offset = 0;
+      let allEvents = [];
+      let total = null;
+
+      while (true) {
+        const url = `${baseUrl}?startDate=${formatDateRFC1123(startDate)}&endDate=${formatDateRFC1123(endDate, true)}&limit=${limit}&offset=${offset}`;
+        const response = await fetch(url, { headers });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = await response.json();
+
+        allEvents = allEvents.concat(data.events || []);
+        total = data.total;
+        if (allEvents.length >= total) break;
+
+        offset += limit;
+      }
+
+      kulu.events = allEvents;
+    }
+
+
+    function processEventDataForSummary(kulu) {
+      const events = kulu.events || [];
+      const starts = events.filter(e => (e.percentageViewed || 0) > 0).length;
+
+      let totalScore = 0;
+      let validCount = 0;
+      events.forEach(e => {
+        const percent = e.percentageViewed ?? 0;
+        const watched = e.durationViewed ?? 0;
+        const length = kulu.lengthSeconds ?? e.lengthSeconds ?? 0;
+
+        if (length > 0) {
+          const timeRatio = watched / length;
+          const score = (percent / 100 + timeRatio) / 2;
+          totalScore += score;
+          validCount++;
+        }
+      });
+
+      kulu.reporting = {
+        views: starts,
+      };
+      kulu.engagementQuality = validCount > 0 ? totalScore / validCount : null;
+    }
+
+
+
+    async function downloadAsImageAndPDF() {
+
+      const { jsPDF } = window.jspdf;
+
+      const button = document.querySelector('button[onclick="downloadAsImageAndPDF()"]');
+      const backBtn = document.getElementById('backButton');
+      const headerBar = document.querySelector('header.bg-gradient-to-r.from-blue-600.to-blue-800');
+
+      // Hide elements
+      if (button) button.style.visibility = 'hidden';
+      if (backBtn) backBtn.style.visibility = 'hidden';
+      if (headerBar) headerBar.style.visibility = 'hidden';
+
+      try {
+        const canvas = await html2canvas(document.body, {
+          useCORS: true,
+          scrollY: 0,
+          windowWidth: document.documentElement.scrollWidth,
+          windowHeight: document.documentElement.scrollHeight
+        });
+
+        // PNG download
+        const imgData = canvas.toDataURL('image/png');
+        const pngLink = document.createElement('a');
+        pngLink.download = 'Qumu_Report.png';
+        pngLink.href = imgData;
+        pngLink.click();
+
+        // PDF download
+        const pdf = new jsPDF({
+          orientation: 'portrait',
+          unit: 'px',
+          format: [canvas.width, canvas.height]
+        });
+        pdf.addImage(imgData, 'PNG', 0, 0, canvas.width, canvas.height);
+        pdf.save('Qumu_Report.pdf');
+
+      } catch (error) {
+        console.error('Error generating PNG + PDF:', error);
+      } finally {
+        // Show elements again
+        if (button) button.style.visibility = 'visible';
+        if (backBtn) backBtn.style.visibility = 'visible';
+        if (headerBar) headerBar.style.visibility = 'visible';
+      }
+    }
+
+
+    function downloadEventTableCSV() {
+      const table = document.querySelector('#eventTableWrapper table');
+      if (!table) return alert('Event table not found.');
+
+      let csv = '';
+      const rows = table.querySelectorAll('tr');
+
+      rows.forEach(row => {
+        const cells = row.querySelectorAll('th, td');
+        const rowData = Array.from(cells).map(cell => {
+          const text = cell.innerText.trim();
+          return `"${text.replace(/"/g, '""')}"`;
+        }).join(',');
+        csv += rowData + '\n';
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'event_table.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+    }
+
+
+    async function fetchSingleKulu(guid, apiBaseUrl, credentials) {
+      try {
+        const headers = new Headers({
+          'Authorization': 'Basic ' + credentials
+        });
+
+        const response = await fetch(`${apiBaseUrl}/api/2.2/rest/kulus/${guid}`, { headers });
+
+        if (!response.ok) {
+          console.error('Failed to fetch single Kulu:', response.status);
+          return null;
+        }
+
+        return await response.json();
+      } catch (err) {
+        console.error('Error fetching single Kulu:', err);
+        return null;
+      }
+    }
+
+
+
+    function downloadFullPageAsImage() {
+      const downloadBtn = document.querySelector(
+        'button[onclick="downloadFullPageAsImage()"]',
+      )
+      const backBtn = document.getElementById('backButton')
+      const headerBar = document.querySelector(
+        'header.bg-gradient-to-r.from-blue-600.to-blue-800',
+      )
+
+      // Hide elements before capture
+      if (downloadBtn) downloadBtn.style.visibility = 'hidden'
+      if (backBtn) backBtn.style.visibility = 'hidden'
+      if (headerBar) headerBar.style.visibility = 'hidden'
+
+      html2canvas(document.body, {
+        useCORS: true,
+        scrollY: 0,
+        windowWidth: document.documentElement.scrollWidth,
+        windowHeight: document.documentElement.scrollHeight,
+      })
+        .then((canvas) => {
+          const link = document.createElement('a')
+          link.download = 'Qumu_Report.png'
+          link.href = canvas.toDataURL('image/png')
+          link.click()
+        })
+        .catch((error) => {
+          console.error('Screenshot capture failed:', error)
+        })
+        .finally(() => {
+          // Restore elements after capture
+          if (downloadBtn) downloadBtn.style.visibility = 'visible'
+          if (backBtn) backBtn.style.visibility = 'visible'
+          if (headerBar) headerBar.style.visibility = 'visible'
+        })
+    }
+
+    document.addEventListener('change', function (e) {
+      if (e.target.id === 'selectAllCheckbox') {
+        const checked = e.target.checked
+        document.querySelectorAll('.kulu-checkbox').forEach((cb) => {
+          cb.checked = checked
+        })
+      }
+    })
+
+
+
+    document.addEventListener('click', async function (e) {
+      if (e.target.id !== 'downloadSelectedBtn') return;
+
+      const checkboxes = document.querySelectorAll('.kulu-checkbox:checked');
+      if (checkboxes.length === 0) {
+        alert('No items selected.');
+        return;
+      }
+
+      const guids = Array.from(checkboxes).map(cb => cb.dataset.guid);
+      const selectedKulus = currentKuluData.filter(k => guids.includes(k.guid));
+
+      for (const kulu of selectedKulus) {
+        const variants = kulu?.media?.variants || [];
+        const canonical = variants.find(v => v.formatCode === 'canonical');
+
+        if (canonical?.url) {
+          try {
+            const response = await fetch(canonical.url, {
+              mode: 'cors'
+            });
+            if (!response.ok) throw new Error(`Failed to fetch ${canonical.url}`);
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = `${kulu.title || kulu.guid || 'video'}.mp4`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            URL.revokeObjectURL(blobUrl);
+          } catch (err) {
+            console.error('Download failed for', canonical.url, err);
+          }
+        } else {
+          console.warn(`No canonical format found for: ${kulu.title}`);
+        }
+      }
+
+
+    });
+
+    document.addEventListener('click', function (e) {
+      if (e.target.id !== 'downloadCsvBtn') return;
+
+      const checkboxes = document.querySelectorAll('.kulu-checkbox:checked');
+      if (checkboxes.length === 0) {
+        alert('No items selected.');
+        return;
+      }
+
+      const guids = Array.from(checkboxes).map(cb => cb.dataset.guid);
+      const selectedKulus = currentKuluData.filter(k => guids.includes(k.guid));
+
+
+      let csv = 'Title,Publisher,Views,Published,GUID,Canonical URL\n';
+
+      selectedKulus.forEach(kulu => {
+        const variants = kulu?.media?.variants || [];
+        const canonical = variants.find(v => v.formatCode === 'canonical');
+
+        if (canonical?.url) {
+          const title = (kulu.title || kulu.guid || 'Untitled').replace(/"/g, '""');
+          const publisher = (kulu.publisher?.name || 'Unknown').replace(/"/g, '""');
+          const views = kulu.reporting?.views ?? 0;
+          const published = kulu?.created
+            ? new Date(kulu.created).toLocaleDateString('en-GB')
+            : '';
+          const guid = kulu.guid || '';
+
+          csv += `"${title}","${publisher}",${views},"${published}","${guid}","${canonical.url}"\n`;
+        }
+      });
+
+
+      const blob = new Blob([csv], { type: 'text/csv' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'canonical_links.csv';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    });
+
+    document.addEventListener('change', function (e) {
+      if (e.target.id === 'selectAllRows') {
+        const checked = e.target.checked;
+        document.querySelectorAll('.kulu-checkbox').forEach(cb => {
+          cb.checked = checked;
+        });
+      }
+    });
+
+
+  </script>
+</body>
+
+</html>

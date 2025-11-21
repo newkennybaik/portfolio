@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qumu Users</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#2563eb', // Custom blue
+            secondary: '#4b5563', // Gray
+            error: '#dc2626', // Red
+            success: '#16a34a', // Green
+          },
+        },
+      },
+    };
+  </script>
+  <style>
+    .vertical-header {
+      writing-mode: vertical-rl;
+      transform: rotate(180deg);
+      white-space: nowrap;
+      min-width: 20px;
+    }
+    input[type="checkbox"] {
+      border-color: #000000;
+      background-color: #ffffff;
+    }
+    input[type="checkbox"]:checked {
+      border-color: #2563eb;
+      background-color: #2563eb;
+    }
+    .table-container {
+      max-height: 500px;
+      overflow-y: auto;
+      position: relative;
+    }
+    #userTable thead {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background-color: #e5e7eb;
+    }
+    #userTable th {
+      border-bottom: 2px solid #d1d5db;
+    }
+  </style>
+</head>
+<body class="bg-gray-100 text-sm p-6">
+  <div class="max-w-screen-xl mx-auto">
+    <h2 class="text-2xl font-semibold mb-4 text-primary">Qumu User List</h2>
+
+    <div id="introText" class="bg-white p-6 rounded-lg shadow-md mb-6 text-secondary leading-relaxed font-bold">
+
+      <p>
+        This utility enables Qumu Administrators to review user accounts and identify potential duplicates such as individuals with matching names or email addresses across multiple domains.</p> 
+		<p> Identified records may be exported for further analysis, supporting the remediation of legacy user accounts.</p>
+		<p> This utility does not delete or modify any user accounts.</p>
+    </div>
+
+    <form id="authForm" class="bg-white p-6 rounded-lg shadow-lg mb-6 border border-gray-200" aria-label="Qumu Login Form">
+      <h3 class="text-lg font-semibold text-primary mb-4">Login to Qumu</h3>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <label class="block">
+          <span class="text-secondary font-medium">Qumu Domain (no https://) <span class="text-error">*</span></span>
+          
+		  
+		  <input
+  type="text"  id="domain"  required  aria-required="true"  aria-describedby="domain-error"  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-primary focus:border-primary bg-blue-50 transition duration-200"/>
+
+		  
+		  
+		  
+		  
+		  <p id="domain-error" class="hidden text-error text-sm mt-1" role="alert"></p>
+        </label>
+        <label class="block">
+          <span class="text-secondary font-medium">Username <span class="text-error">*</span></span>
+          <input type="text" id="username" required aria-required="true" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-primary focus:border-primary bg-blue-50 transition duration-200" />
+        </label>
+        <label class="block">
+          <span class="text-secondary font-medium">Password <span class="text-error">*</span></span>
+          <input type="password" id="password" required aria-required="true" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-primary focus:border-primary bg-blue-50 transition duration-200" />
+        </label>
+        <label class="block relative">
+          <span class="text-secondary font-medium">Duplicate Sensitivity
+            <span class="text-gray-500 cursor-help" title="Strict: Exact matches; Balanced: Minor variations; Loose: Broader matches" aria-label="Duplicate sensitivity options: Strict for exact matches, Balanced for minor variations, Loose for broader matches">ℹ️</span>
+          </span>
+          <select id="sensitivity" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-primary focus:border-primary transition duration-200">
+            <option value="strict">Strict</option>
+            <option value="balanced" selected>Balanced</option>
+            <option value="loose">Loose</option>
+          </select>
+        </label>
+      </div>
+      <div class="flex justify-end space-x-4">
+        <button type="button" id="resetForm" class="bg-secondary hover:bg-gray-700 text-white px-4 py-2 rounded-md shadow transition duration-200">Reset</button>
+        <button type="submit" class="bg-primary hover:bg-blue-700 text-white px-4 py-2 rounded-md shadow transition duration-200 flex items-center" aria-live="polite">
+          <svg id="spinner" class="hidden animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8v-8H4z"></path>
+          </svg>
+          <span id="submitText">Fetch Users</span>
+        </button>
+      </div>
+    </form>
+
+    <div id="status" class="mb-4 flex items-center">
+      <svg id="statusSpinner" class="hidden animate-spin h-5 w-5 mr-2 text-secondary" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8h8a8 8 0 01-8 8v-8H4z"></path>
+      </svg>
+      <span id="statusText" class="text-secondary font-medium" role="status"></span>
+    </div>
+	
+
+	<div id="actionBar" class="hidden mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 flex-wrap">
+  <!-- Search box with icon -->
+  <div class="relative w-full sm:w-64">
+    <span class="absolute inset-y-0 left-0 flex items-center pl-2 text-gray-500">
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35m0 0A7.5 7.5 0 1116.65 6.65a7.5 7.5 0 010 10.6z" />
+      </svg>
+    </span>
+    <input
+      type="text"
+      id="userSearch"
+      placeholder="Search..."
+      class="w-full pl-8 pr-2 py-2 rounded-md border border-gray-300 shadow-sm focus:ring-2 focus:ring-primary focus:border-primary"
+    />
+  </div>
+
+  <!-- Show only duplicates checkbox -->
+  <label class="flex items-center text-sm text-secondary font-medium space-x-2 whitespace-nowrap" title="Disabled for large datasets" >
+    <input type="checkbox" id="showOnlyDuplicates" class="form-checkbox h-4 w-4 text-primary" />
+    <span>Show only duplicates</span>
+  </label>
+
+  <!-- Download button -->
+  <button
+    id="downloadDuplicates"
+    class="bg-secondary hover:bg-gray-700 text-white px-4 py-2 rounded-md shadow transition duration-200"
+  >
+    Download Duplicate Report (CSV)
+  </button>
+</div>
+
+	
+
+    <div class="table-container bg-white rounded-lg shadow-md">
+      <table id="userTable" class="min-w-full text-center table-auto hidden">
+        <thead class="bg-gray-200 text-xs text-secondary uppercase">
+          <tr id="headerRow">
+            <th class="px-3 py-2 max-w-[12ch] truncate text-xs">GUID</th>
+            <th class="px-3 py-2">Username</th>
+            <th class="px-3 py-2">Name</th>
+            <th class="px-3 py-2">Email</th>
+            <th class="px-3 py-2">Status</th>
+          </tr>
+        </thead>
+        <tbody class="text-sm"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+  
+   const AUTO_HIDE_THRESHOLD = 10000; // adjust as needed
+   
+   
+    function normalize(str) {
+      return (str || '')
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]/gi, "")
+        .toLowerCase()
+        .trim();
+    }
+
+    function levenshtein(a, b) {
+      const an = a.length, bn = b.length;
+      if (an === 0) return bn;
+      if (bn === 0) return an;
+      const matrix = Array.from({ length: bn + 1 }, (_, i) => [i]);
+      for (let j = 1; j <= an; j++) matrix[0][j] = j;
+      for (let i = 1; i <= bn; i++) {
+        for (let j = 1; j <= an; j++) {
+          const cost = a[j - 1] === b[i - 1] ? 0 : 1;
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j] + 1,
+            matrix[i][j - 1] + 1,
+            matrix[i - 1][j - 1] + cost
+          );
+        }
+      }
+      return matrix[bn][an];
+    }
+
+	
+	function isFuzzyDuplicate(user, users, unameThreshold, emailThreshold, nameThreshold) {
+  const uname = normalize(user.username);
+  const email = normalize(user.email);
+  const name = normalize(`${user.forename} ${user.surname}`);
+ 
+
+
+  for (const other of users) {
+    if (other === user) continue;
+
+    const o_uname = normalize(other.username);
+    const o_email = normalize(other.email);
+    const o_name = normalize(`${other.forename} ${other.surname}`);
+
+    if (uname && o_uname && levenshtein(uname, o_uname) <= unameThreshold) {
+      user._dupReason = 'username';
+      user._dupMatchGuid = other.guid;
+      return true;
+    }
+    if (email && o_email && levenshtein(email, o_email) <= emailThreshold) {
+      user._dupReason = 'email';
+      user._dupMatchGuid = other.guid;
+      return true;
+    }
+    if (name && o_name && levenshtein(name, o_name) <= nameThreshold) {
+      user._dupReason = 'name';
+      user._dupMatchGuid = other.guid;
+      return true;
+    }
+  }
+  return false;
+}
+
+
+
+
+
+
+    function getStatusClass(status) {
+      switch ((status || "").toUpperCase()) {
+        case "ACTIVE": return "text-success font-semibold";
+        case "INACTIVE": return "text-yellow-600 font-semibold";
+        case "SUSPENDED": return "text-error font-semibold";
+        case "BOT": return "text-primary font-semibold";
+        default: return "text-secondary";
+      }
+    }
+
+	function convertUsersToCSV(users) {
+    const header = ["GUID", "Username", "Forename", "Surname", "Email", "Status", "Duplicate Reason", "Matched GUID"];
+    const rows = users.map(user => [
+    user.guid,
+    user.username,
+    user.forename,
+    user.surname,
+    user.email,
+    user.status,
+    user._dupReason || '',
+    user._dupMatchGuid || ''
+  ].map(value => `"${(value || '').replace(/"/g, '""')}"`).join(','));
+  return [header.join(','), ...rows].join('\n');
+ }
+
+
+    function downloadCSV(filename, content) {
+      const blob = new Blob([content], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute('download', filename);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
+    const allRoles = [
+      "VIEW_CONTENT", "CONTENT_ADMIN", "CREATE_CONTENT", "SITE_ADMIN",
+      "NETWORK_ADMIN", "SECURITY_ADMIN", "ANALYTICS_USER", "CONTENT_MANAGER"
+    ];
+
+    const duplicateUsers = [];
+
+    function setStatus(message, type = 'info', loading = false) {
+      const statusText = document.getElementById('statusText');
+      const statusSpinner = document.getElementById('statusSpinner');
+      const submitButton = document.getElementById('submitText');
+      const form = document.getElementById('authForm');
+	  
+
+
+      statusText.textContent = message;
+      statusText.className = `font-medium ${
+        type === 'error' ? 'text-error' :
+        type === 'success' ? 'text-success' : 'text-secondary'
+      }`;
+      statusSpinner.classLine = `hidden animate-spin h-5 w-5 mr-2 text-secondary`;
+      submitButton.textContent = loading ? 'Fetching...' : 'Fetch Users';
+      form.setAttribute('aria-busy', loading ? 'true' : 'false');
+    }
+
+    function validateDomain(domain) {
+      const domainRegex = /^[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      const errorElement = document.getElementById('domain-error');
+      if (!domainRegex.test(domain)) {
+        errorElement.textContent = 'Please enter a valid domain (e.g., example.com)';
+        errorElement.classList.remove('hidden');
+        return false;
+      }
+      errorElement.classList.add('hidden');
+      return true;
+    }
+
+    document.getElementById('authForm').addEventListener('submit', async function (e) {
+      e.preventDefault();
+
+      const domain = document.getElementById('domain').value;
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      const sensitivitySetting = document.getElementById('sensitivity').value;
+
+      if (!validateDomain(domain)) return;
+
+      let unameThreshold, emailThreshold, nameThreshold;
+      switch (sensitivitySetting) {
+        case 'strict':
+          unameThreshold = 1; emailThreshold = 1; nameThreshold = 2;
+          break;
+        case 'loose':
+          unameThreshold = 3; emailThreshold = 2; nameThreshold = 4;
+          break;
+        default:
+          unameThreshold = 2; emailThreshold = 1; nameThreshold = 3;
+      }
+
+      const statusDiv = document.getElementById('status');
+      const table = document.getElementById('userTable');
+      const theadRow = document.getElementById('headerRow');
+      const tbody = table.querySelector('tbody');
+      const credentials = btoa(`${username}:${password}`);
+
+      setStatus('Fetching users...', 'info', true);
+      tbody.innerHTML = '';
+      table.classList.add("hidden");
+      duplicateUsers.length = 0;
+
+      if (theadRow.children.length <= 5) {
+        allRoles.forEach(role => {
+          const th = document.createElement('th');
+          th.className = "vertical-header px-0.5 py-2 text-secondary";
+          th.textContent = role;
+          th.setAttribute('aria-label', `Role: ${role}`);
+          theadRow.appendChild(th);
+        });
+      }
+
+      const batchSize = 20; // Increased from 10 to 20
+      let offset = 0;
+      let total = null;
+      const allUsers = [];
+
+      try {
+        while (true) {
+          const url = `https://${domain}/api/2.2/rest/users?offset=${offset}&limit=${batchSize}`;
+          setStatus(`Fetching users... batch ${offset / batchSize + 1}, starting at user ${offset + 1}`, 'info', true);
+          const response = await fetch(url, {
+            headers: { 'Authorization': `Basic ${credentials}` }
+          });
+          if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          const json = await response.json();
+          const users = json.users || [];
+          total = total ?? json.total;
+          allUsers.push(...users);
+          offset += batchSize;
+          if (offset >= total) break;
+        }
+
+        let fuzzyMatchCount = 0;
+        const fragment = document.createDocumentFragment();
+
+        allUsers.forEach(user => {
+          const row = document.createElement('tr');
+          const name = `${user.forename || ''} ${user.surname || ''}`.trim();
+          const roles = user.roles || [];
+          const isFuzzy = isFuzzyDuplicate(user, allUsers, unameThreshold, emailThreshold, nameThreshold);
+
+          if (isFuzzy) {
+            fuzzyMatchCount++;
+            duplicateUsers.push(user);
+            row.className = "border-b hover:bg-gray-50 bg-orange-100";
+            row.title = `Possible duplicate based on ${user._dupReason}`;
+            row.setAttribute('aria-label', `User row, possible duplicate based on ${user._dupReason}`);
+          } else {
+            row.className = "border-b hover(bg-gray-50";
+            row.setAttribute('aria-label', 'User row');
+          }
+
+          const cells = [
+            document.createElement('td'),
+            document.createElement('td'),
+            document.createElement('td'),
+            document.createElement('td'),
+            document.createElement('td')
+          ];
+          cells[0].textContent = user.guid || '';
+          cells[0].className = "px-2 py-1";
+          cells[1].textContent = user.username || '';
+          cells[1].className = "px-2 py-1";
+          cells[2].textContent = name;
+          cells[2].className = "px-2 py-1";
+          cells[3].textContent = user.email || '';
+          cells[3].className = "px-2 py-1";
+          cells[4].className = `${getStatusClass(user.status)} px-2 py-1`;
+          cells[4].textContent = user.status || '';
+
+          row.append(...cells);
+
+          allRoles.forEach(role => {
+            const cell = document.createElement('td');
+            const checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.disabled = true;
+            checkbox.checked = roles.includes(role);
+            checkbox.className = "form-checkbox";
+            checkbox.setAttribute('aria-label', `${role} role for user ${user.username || 'unknown'}`);
+            cell.appendChild(checkbox);
+            row.appendChild(cell);
+          });
+
+          fragment.appendChild(row);
+        });
+
+        tbody.appendChild(fragment);
+		table.classList.remove("hidden");
+		document.getElementById('introText').classList.add('hidden');
+		
+		const showOnlyDupDefault = allUsers.length > AUTO_HIDE_THRESHOLD;
+		const dupToggle = document.getElementById('showOnlyDuplicates');
+
+		dupToggle.checked = showOnlyDupDefault;
+		dupToggle.disabled = showOnlyDupDefault;
+		filterDisplayedUsers(showOnlyDupDefault);
+			        	
+        document.getElementById('actionBar').classList.toggle('hidden', duplicateUsers.length === 0);
+
+		let statusMsg = `Fetched ${allUsers.length} users. ${fuzzyMatchCount} potential duplicates detected.`;
+		if (showOnlyDupDefault) {
+		statusMsg += ` Showing only duplicates by default.`;
+		}
+		setStatus(statusMsg, 'success', false);
+	}catch (err) {
+	setStatus(`Error: ${err.message}`, 'error', false);
+    }
+	});
+	
+	
+
+    document.getElementById('resetForm').addEventListener('click', () => {
+      document.getElementById('authForm').reset();
+      setStatus('', 'info', false);
+      document.getElementById('userTable').classList.add('hidden');
+	document.getElementById('actionBar').classList.add('hidden');
+
+      document.querySelectorAll('.text-error.text-sm').forEach(el => el.classList.add('hidden'));
+    });
+
+    document.getElementById('downloadDuplicates').addEventListener('click', () => {
+      if (duplicateUsers.length === 0) return;
+      const csv = convertUsersToCSV(duplicateUsers);
+      downloadCSV('qumu_duplicate_users.csv', csv);
+      setStatus('Duplicate report downloaded successfully.', 'success', false);
+    });
+	
+	function filterDisplayedUsers(showOnlyDuplicates) {
+  const rows = document.querySelectorAll("#userTable tbody tr");
+  rows.forEach(row => {
+    const isDup = row.classList.contains("bg-orange-100");
+    row.style.display = showOnlyDuplicates && !isDup ? "none" : "";
+  });
+}
+
+	
+	
+	function filterTableBySearch(query) {
+  const rows = document.querySelectorAll("#userTable tbody tr");
+  const q = normalize(query);
+  rows.forEach(row => {
+    const text = normalize(row.textContent);
+    row.style.display = text.includes(q) ? "" : "none";
+  });
+}
+
+document.getElementById("userSearch").addEventListener("input", (e) => {
+  filterTableBySearch(e.target.value);
+});
+
+document.getElementById('showOnlyDuplicates').addEventListener('change', (e) => {
+  filterDisplayedUsers(e.target.checked);
+});
+
+	
+	
+  </script>
+</body>
+</html>

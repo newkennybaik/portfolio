@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="12px" height="12px" viewBox="0 0 12 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icon_record@0.0x</title>
+    <g id="v4" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="E02" transform="translate(-444.000000, -207.000000)" fill="#A9B2B9" fill-rule="nonzero">
+            <g id="pop-up" transform="translate(226.000000, 69.000000)">
+                <g id="test-sound" transform="translate(153.500000, 138.000000)">
+                    <path d="M70.5,0 C67.1860457,0 64.5,2.68604571 64.5,6 C64.5,9.31392 67.1860457,12 70.5,12 C73.81392,12 76.5,9.31392 76.5,6 C76.5,2.68604571 73.81392,0 70.5,0 Z M70.5,3 C72.1568542,3 73.5,4.34314575 73.5,6 C73.5,7.65685425 72.1568542,9 70.5,9 C68.8431458,9 67.5,7.65685425 67.5,6 C67.5,4.34314575 68.8431458,3 70.5,3 Z" id="icon_record"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

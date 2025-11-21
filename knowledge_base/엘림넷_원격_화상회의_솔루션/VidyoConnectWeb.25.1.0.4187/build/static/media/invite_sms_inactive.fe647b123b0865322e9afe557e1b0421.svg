@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="20px" height="20px" viewBox="0 0 20 20" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Shape Copy</title>
+    <g id="UX-429-Invite-User-Via-Sms-Dialpad-VidyoConnect-Desktop-v7" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="B01" transform="translate(-455.000000, -482.000000)" fill="#B4C3D0">
+            <g id="invite" transform="translate(420.000000, 238.000000)">
+                <g id="tabs" transform="translate(0.000000, 40.000000)">
+                    <path d="M53,204 C54.1,204 55,204.9 55,206 L55,206 L55,218 C55,219.1 54.1,220 53,220 L53,220 L39,220 L35,224 L35,206 C35,204.9 35.9,204 37,204 L37,204 Z M41,211 C40.4477153,211 40,211.447715 40,212 C40,212.552285 40.4477153,213 41,213 C41.5522847,213 42,212.552285 42,212 C42,211.447715 41.5522847,211 41,211 Z M45,211 C44.4477153,211 44,211.447715 44,212 C44,212.552285 44.4477153,213 45,213 C45.5522847,213 46,212.552285 46,212 C46,211.447715 45.5522847,211 45,211 Z M49,211 C48.4477153,211 48,211.447715 48,212 C48,212.552285 48.4477153,213 49,213 C49.5522847,213 50,212.552285 50,212 C50,211.447715 49.5522847,211 49,211 Z" id="Shape-Copy"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

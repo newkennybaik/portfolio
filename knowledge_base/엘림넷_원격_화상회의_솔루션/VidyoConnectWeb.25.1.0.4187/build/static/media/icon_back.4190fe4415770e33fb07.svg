@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>light_mode / icons / nav_bar / icon_back</title>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="light_mode-/-icons-/-nav_bar-/-icon_back">
+            <rect id="Rectangle" x="0" y="0" width="24" height="24"></rect>
+            <path d="M11.4848188,23 C12.337904,23 13,22.3551297 13,21.5366404 C13,21.1273957 12.834476,20.7553551 12.5416259,20.470124 L3.6287953,11.9875986 L12.5416259,3.52987599 C12.834476,3.24464487 13,2.86020293 13,2.46335964 C13,1.64487035 12.337904,1 11.4848188,1 C11.0773751,1 10.7208619,1.14881623 10.4407444,1.421646 L0.534769833,10.8466742 C0.178256611,11.1691094 0,11.5659526 0,12 C0,12.4340474 0.178256611,12.8060879 0.522037218,13.1409245 L10.4280118,22.578354 C10.7208619,22.8511838 11.0773751,23 11.4848188,23 Z" id="arrow" fill="#51575C"></path>
+        </g>
+    </g>
+</svg>

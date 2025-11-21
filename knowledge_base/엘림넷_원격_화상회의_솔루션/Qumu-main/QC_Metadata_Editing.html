@@ -1,0 +1,1221 @@
+
+
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Qumu Metadata Tool</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body class="bg-gray-100 font-sans">
+  <!-- Header Bar -->
+  <header class="bg-gradient-to-r from-blue-600 to-blue-800 text-white shadow-lg">
+    <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+      <div class="flex items-center space-x-3">
+        <div class="w-8 h-8 bg-white bg-opacity-20 rounded-lg flex items-center justify-center">
+          <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd"
+              d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V8zm0 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1v-2z"
+              clip-rule="evenodd"></path>
+          </svg>
+        </div>
+        <h1 class="text-xl font-bold">Qumu Metadata Editing Tool</h1>
+		<div>
+		    
+
+    </div>
+  </header>
+		
+		
+		
+		
+		</header>
+      
+
+  <script src="https://cdn.tailwindcss.com">, 3000);
+}
+
+function renderKuluTable(kulus) {
+
+  if (!Array.isArray(kulus) || kulus.length === 0) {
+
+    resultDiv.innerHTML = '<p class="text-gray-600 italic mt-4">No videos found in this playlist.</p>';
+
+    return;
+
+  }
+
+
+
+  const rows = kulus.map(kulu => {
+
+    const descMeta = (kulu.metadata || []).find(m => m.title === "Description");
+
+    const tagsMeta = (kulu.metadata || []).find(m => m.title === "Tags");
+
+    return `
+
+      <tr class="border-t">
+
+        <td class="p-2"><textarea rows="2" data-type="Title" data-guid="${kulu.guid}" class="w-full border p-1 rounded">${kulu.title || ""}</textarea></td>
+
+        <td class="p-2">
+
+          <textarea rows="2" data-type="Description" data-guid="${kulu.guid}" data-metaguid="${descMeta?.guid || ''}" class="w-full border p-1 rounded">${descMeta?.value || ''}</textarea>
+
+        </td>
+
+        
+<td class="p-2 w-[300px] max-w-[300px]"><div class="overflow-x-auto whitespace-nowrap flex flex-wrap gap-1 mb-1">
+    ${
+      Array.isArray(tagsMeta?.value)
+        ? tagsMeta.value.map(tag => `<span class='bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs'>${tag}</span>`).join('')
+        : ''
+    }
+  </div>
+  <input type="text" style="max-width: 250px;" data-type="Tags" data-guid="${kulu.guid}" data-metaguid="${tagsMeta?.guid || ''}" class="w-full border p-1 rounded" value="${Array.isArray(tagsMeta?.value) ? tagsMeta.value.join(', ') : ''}" />
+</td>
+
+
+        <td class="p-2 w-20"> <button class="save-meta bg-blue-600 text-white px-3 py-1 rounded" data-guid="${kulu.guid}">Save</button>
+
+        </td>
+
+      </tr>
+
+    `;
+
+  }).join('');
+
+
+
+  resultDiv.innerHTML = `
+
+    <div class="bg-white p-4 rounded shadow mt-4 overflow-x-auto">
+
+      
+<h3 class="text-lg font-semibold mb-2"> Videos in Playlist</h3>
+<div class="flex justify-between items-center gap-4 mb-4">
+  <input type="text" id="searchInput" placeholder="Search title or description..." class="border p-2 rounded w-full max-w-md" />
+  <button id="clearSearch" class="bg-gray-300 text-sm text-black px-3 py-1 rounded">Clear</button>
+</div>
+
+
+
+
+<table class="w-full text-left border border-gray-300">
+
+        <thead class="bg-gray-100">
+
+          <tr>
+
+            <th class="p-2 border-r">Title</th>
+
+            <th class="p-2 border-r">Description</th>
+
+            <th class="p-2 border-r">Tags</th>
+
+            <th class="p-2 w-20">Action</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>${rows}</tbody>
+
+      </table>
+
+    </div>
+
+  `;
+
+
+
+  hookUpMetadataSaveHandlers();
+
+}
+
+
+
+
+function hookUpMetadataSaveHandlers() {
+  // Attach single click handler via onclick
+  document.querySelectorAll('.save-meta').forEach(button => {
+    // Clear existing onclick to avoid duplicates
+    button.onclick = null;
+    button.onclick = async () => {
+      const guid = button.dataset.guid;
+      const saved = JSON.parse(localStorage.getItem('qumuLogin'));
+      const domain = saved.domain.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+      const credentials = btoa(`${saved.username}:${saved.password}`);
+
+      const descriptionEl = document.querySelector(`textarea[data-guid="${guid}"][data-type="Description"]`);
+      const tagsEl = document.querySelector(`input[data-guid="${guid}"][data-type="Tags"]`);
+
+      const descGuid = descriptionEl?.dataset.metaguid;
+      const tagsGuid = tagsEl?.dataset.metaguid;
+      const descVal = descriptionEl?.value.trim();
+      const tagsVal = tagsEl?.value.split(',').map(t => t.trim()).filter(Boolean);
+
+      try {
+        if (descGuid) {
+          await fetch(`https://${domain}/api/2.2/rest/kulus/${guid}/metadata`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Basic ${credentials}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ metadata: { guid: descGuid, value: descVal } })
+          });
+        }
+        if (tagsGuid) {
+          await fetch(`https://${domain}/api/2.2/rest/kulus/${guid}/metadata`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Basic ${credentials}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ metadata: { guid: tagsGuid, value: tagsVal } })
+          });
+        }
+        showToast(`✅ Metadata updated for GUID: ${guid}`);
+      } catch (err) {
+        console.error(err);
+        showToast(`❌ Failed to update metadata for GUID: ${guid}
+${err.message}`);
+      }
+    };
+  });
+}
+
+
+            })
+
+          });
+
+        }
+
+
+
+        if (tagsGuid) {
+
+          await fetch(`https://${domain}/api/2.2/rest/kulus/${guid}/metadata`, {
+
+            method: 'POST',
+
+            headers: {
+
+              'Authorization': `Basic ${credentials}`,
+
+              'Content-Type': 'application/json'
+
+            },
+
+            body: JSON.stringify({
+
+              metadata: {
+
+                guid: tagsGuid,
+
+                value: tagsVal
+
+              }
+
+            })
+
+          });
+
+        }
+
+
+
+        showToast(` Metadata updated for GUID: ${guid}`);
+
+      } catch (err) {
+
+        console.error(err);
+
+        showToast(` Failed to update metadata for GUID: ${guid}\n${err.message}`);
+
+      }
+
+    });
+
+  });
+
+}
+
+
+
+
+
+
+
+let currentKulus = [];
+
+
+
+function renderKuluTable(kulus) {
+
+  currentKulus = kulus;
+
+  renderFilteredTable(kulus);
+
+
+
+  
+  
+  const searchInput = document.getElementById('searchInput');
+  const clearButton = document.getElementById('clearSearch');
+
+  if (searchInput && clearButton) {
+    searchInput.addEventListener('input', () => {
+      const term = searchInput.value.toLowerCase();
+      const filtered = currentKulus.filter(kulu =>
+        (kulu.title || '').toLowerCase().includes(term) ||
+        ((kulu.metadata || []).find(m => m.title === "Description")?.value || '').toLowerCase().includes(term)
+      );
+      renderFilteredTable(filtered);
+    });
+
+    clearButton.addEventListener('click', () => {
+      searchInput.value = '';
+      renderFilteredTable(currentKulus);
+    });
+  }
+
+  hookUpMetadataSaveHandlers();
+}
+
+
+
+
+
+let currentSortField = null;
+let sortAscending = true;
+
+function sortTableBy(field) {
+  if (currentSortField === field) {
+    sortAscending = !sortAscending;
+  } else {
+    currentSortField = field;
+    sortAscending = true;
+  }
+
+  const sorted = [...currentKulus].sort((a, b) => {
+    const aVal = (a[field] || '').toLowerCase();
+    const bVal = (b[field] || '').toLowerCase();
+    return sortAscending ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+  });
+
+  renderFilteredTable(sorted);
+}
+
+
+
+
+function renderFilteredTable(kulus) {
+  const rows = kulus.map(kulu => {
+    const descMeta = (kulu.metadata || []).find(m => m.title === "Description");
+    const tagsMeta = (kulu.metadata || []).find(m => m.title === "Tags");
+    return `
+      <tr class="border-t">
+        <td class="p-2"><textarea rows="2" data-type="Title" data-guid="${kulu.guid}" class="w-full border p-1 rounded">${kulu.title || ""}</textarea></td>
+        <td class="p-2">
+          <textarea rows="2" data-type="Description" data-guid="${kulu.guid}" data-metaguid="${descMeta?.guid || ''}" class="w-full border p-1 rounded">${descMeta?.value || ''}</textarea>
+        </td>
+        
+<td class="p-2 w-[300px] max-w-[300px]"><div class="overflow-x-auto whitespace-nowrap flex flex-wrap gap-1 mb-1">
+    ${
+      Array.isArray(tagsMeta?.value)
+        ? tagsMeta.value.map(tag => `<span class='bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs'>${tag}</span>`).join('')
+        : ''
+    }
+  </div>
+  <input type="text" style="max-width: 250px;" data-type="Tags" data-guid="${kulu.guid}" data-metaguid="${tagsMeta?.guid || ''}" class="w-full border p-1 rounded" value="${Array.isArray(tagsMeta?.value) ? tagsMeta.value.join(', ') : ''}" />
+</td>
+
+        <td class="p-2 w-20"> <button class="save-meta bg-blue-600 text-white px-3 py-1 rounded" data-guid="${kulu.guid}">Save</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  document.getElementById('result').innerHTML = `
+    <div class="bg-white p-4 rounded shadow mt-4 overflow-x-auto">
+      <table class="w-full text-left border border-gray-300">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-2 border-r cursor-pointer" onclick="sortTableBy('title')">Title </th>
+            <th class="p-2 border-r">Description</th>
+            <th class="p-2 border-r">Tags</th>
+            <th class="p-2 w-20">Action</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+  document.getElementById('searchUI')?.classList.remove('hidden');
+  hookUpMetadataSaveHandlers();
+}
+
+</script>
+
+</head>
+
+<body class="bg-gray-100 text-gray-900 min-h-screen p-6">
+  <div id="toast-container" class="fixed bottom-4 right-4 flex flex-col space-y-2 z-50"></div>
+
+
+
+  <!-- Login Page -->
+
+  <div id="loginPage" class="max-w-xl mx-auto bg-white p-6 rounded shadow mb-6">
+
+    <h2 class="text-xl font-semibold mb-4">Login to Qumu</h2>
+
+    <input id="domain" type="text" placeholder="Domain (e.g., demo.qumucloud.com)" class="w-full mb-3 p-2 border rounded" />
+
+    <input id="username" type="text" placeholder="Username" class="w-full mb-3 p-2 border rounded" />
+
+    <input id="password" type="password" placeholder="Password" class="w-full mb-3 p-2 border rounded" />
+
+    <button id="saveLogin" class="bg-indigo-600 text-white px-4 py-2 rounded">Login</button>
+
+  </div>
+
+
+
+  <!-- App Page -->
+
+  <div id="appPage" class="hidden">
+
+    <!-- Folder and Playlist Selection -->
+
+    <div class="max-w-xl mx-auto bg-white p-6 rounded shadow mb-6" id="folderContainer">
+
+      <h2 class="text-xl font-semibold mb-4">Select Folder</h2>
+
+      <div id="folderDropdown" class="mb-4 min-h-[2.5rem]">
+      <select disabled class="w-full border px-3 py-2 rounded text-gray-500">
+        <option>Loading folders…</option>
+      </select>
+    </div>
+
+
+
+      <h2 class="text-xl font-semibold mb-4">Select Playlist</h2>
+
+      <div id="playlistDropdown" class="mb-4">
+      <select disabled class="w-full border px-3 py-2 rounded text-gray-500">
+        <option>Loading playlists…</option>
+      </select>
+    </div>
+
+    </div>
+
+
+
+
+
+    <!-- Result Card -->
+
+    
+<!-- Search Bar -->
+<div id="searchUI" class="max-w-6xl mx-auto mb-4 flex items-center gap-4 hidden">
+  <input type="text" id="searchInput" placeholder="Search title or description..." class="border p-2 rounded w-full max-w-md" />
+  <button id="clearSearch" class="bg-gray-300 text-sm text-black px-3 py-1 rounded">Clear</button>
+  <button id="refreshResults" class="bg-gray-300 text-sm text-black px-3 py-1 rounded">Refresh</button>
+</div>
+
+
+<div id="playlistLoading" class="flex items-center justify-center mt-4 hidden">
+  <div class="animate-spin rounded-full h-6 w-6 border-t-2 border-b-2 border-gray-800"></div>
+  <span class="ml-2 text-sm text-gray-600">Loading playlist...</span>
+</div>
+
+<div id="result" class="w-full px-4"></div>
+
+  </div>
+
+
+
+
+
+  <script>
+
+    
+function showToast(message) {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const toast = document.createElement('div');
+  toast.textContent = message;
+  toast.className = 'bg-green-600 text-white px-4 py-2 rounded shadow';
+  container.appendChild(toast);
+  setTimeout(() => {
+    container.removeChild(toast);
+  }, 3000);
+}
+const domainInput = document.getElementById('domain');
+
+    const usernameInput = document.getElementById('username');
+
+    const passwordInput = document.getElementById('password');
+
+    const resultDiv = document.getElementById('result');
+
+    const loginPage = document.getElementById('loginPage');
+
+    const appPage = document.getElementById('appPage');
+
+    let foldersData = [];
+
+
+
+    function showApp() {
+
+      loginPage.classList.add('hidden');
+
+      appPage.classList.remove('hidden');
+
+    }
+
+
+
+    function createFolderDropdown(folders) {
+
+      const folderSelect = document.createElement('select');
+
+      folderSelect.id = 'folderSelect';
+
+      folderSelect.className = 'w-full border px-3 py-2 rounded';
+
+      const defaultOption = document.createElement('option');
+
+      defaultOption.value = '';
+
+      defaultOption.textContent = '-- Select Folder --';
+
+      folderSelect.appendChild(defaultOption);
+
+
+
+      folders.forEach(folder => {
+
+        const option = document.createElement('option');
+
+        option.value = folder.guid;
+
+        option.textContent = folder.title || 'Untitled Folder';
+
+        folderSelect.appendChild(option);
+
+      });
+
+
+
+      return folderSelect;
+
+    }
+
+
+
+    function createPlaylistDropdown(playlists) {
+
+      const playlistDropdown = document.createElement('select');
+
+      playlistDropdown.id = 'playlistSelect';
+
+      playlistDropdown.className = 'w-full border px-3 py-2 rounded';
+
+      const defaultOption = document.createElement('option');
+
+      defaultOption.value = '';
+
+      defaultOption.textContent = '-- Select Playlist --';
+
+      playlistDropdown.appendChild(defaultOption);
+
+
+
+      playlists.forEach(pl => {
+
+        const option = document.createElement('option');
+
+        option.value = pl.guid;
+
+        option.textContent = pl.title || 'Untitled Playlist';
+
+        playlistDropdown.appendChild(option);
+
+      });
+
+
+
+      return playlistDropdown;
+
+    }
+
+
+
+    function renderKuluTable(kulus) {
+
+      if (!Array.isArray(kulus) || kulus.length === 0) {
+
+        resultDiv.innerHTML = '<p class="text-gray-600 italic mt-4">No videos found in this playlist.</p>';
+
+        return;
+
+      }
+
+
+
+      const rows = kulus.map(kulu => `
+
+        <tr class="border-t">
+
+          <td class="p-2"><textarea rows="2" data-type="Title" data-guid="${kulu.guid}" class="w-full border p-1 rounded">${kulu.title || ""}</textarea></td>
+
+          <td class="p-2">${kulu.description || ''}</td>
+
+          <td class="p-2">${Array.isArray(kulu.tags) ? kulu.tags.join(', ') : ''}</td>
+
+        </tr>
+
+      `).join('');
+
+
+
+      resultDiv.innerHTML = `
+
+        <div class="bg-white p-4 rounded shadow mt-4">
+
+          
+<h3 class="text-lg font-semibold mb-2"> Videos in Playlist</h3>
+<div class="flex justify-between items-center gap-4 mb-4">
+  <input type="text" id="searchInput" placeholder="Search title or description..." class="border p-2 rounded w-full max-w-md" />
+  <button id="clearSearch" class="bg-gray-300 text-sm text-black px-3 py-1 rounded">Clear</button>
+</div>
+
+
+
+
+<table class="w-full text-left border border-gray-300">
+
+            <thead class="bg-gray-100">
+
+              <tr>
+
+                <th class="p-2 border-r">Title</th>
+
+                <th class="p-2 border-r">Description</th>
+
+                <th class="p-2">Tags</th>
+
+              </tr>
+
+            </thead>
+
+            <tbody>${rows}</tbody>
+
+          </table>
+
+        </div>
+
+      `;
+
+    }
+
+
+
+    async function fetchFoldersAndShowDropdown(domain, username, password) {
+
+      const folderContainer = document.getElementById('folderDropdown');
+
+      const playlistContainer = document.getElementById('playlistDropdown');
+
+      folderContainer.innerHTML = '';
+
+      playlistContainer.innerHTML = '';
+
+      resultDiv.innerHTML = '';
+
+
+
+      const cleanDomain = domain.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+      const credentials = btoa(`${username}:${password}`);
+
+      const url = `https://${cleanDomain}/api/2.2/rest/folders`;
+
+
+
+      try {
+
+        
+const response = await fetch(url, {
+
+          headers: { 'Authorization': `Basic ${credentials}` }
+
+        });
+
+
+
+        if (!response.ok) {
+
+          const errorText = await response.text();
+
+          throw new Error(`Login failed: ${response.status} - ${errorText}`);
+
+        }
+
+
+
+        const data = await response.json();
+
+        foldersData = data.folders || [];
+
+        const folderSelect = createFolderDropdown(foldersData);
+
+        folderContainer.appendChild(folderSelect);
+
+
+
+        folderSelect.addEventListener('change', () => {
+
+          const folderGuid = folderSelect.value;
+
+          playlistContainer.innerHTML = '';
+
+          resultDiv.innerHTML = '';
+
+
+
+          if (!folderGuid) return;
+
+
+
+          const selectedFolder = foldersData.find(f => f.guid === folderGuid);
+
+          if (!selectedFolder || !Array.isArray(selectedFolder.playlists)) {
+
+            playlistContainer.innerHTML = `<p class="text-red-600"> No playlists found in selected folder.</p>`;
+
+            return;
+
+          }
+
+
+
+          const playlistSelect = createPlaylistDropdown(selectedFolder.playlists);
+
+          playlistContainer.appendChild(playlistSelect);
+
+
+
+          playlistSelect.addEventListener('change', async () => {
+
+            const playlistGuid = playlistSelect.value;
+              const playlistLoading = document.getElementById('playlistLoading');
+              if (playlistGuid && playlistLoading) playlistLoading.classList.remove('hidden');
+
+            resultDiv.innerHTML = '';
+
+            if (!playlistGuid) return;
+
+
+
+            const url = `https://${cleanDomain}/api/2.2/rest/playlists/${playlistGuid}/kulus?limit=100`;
+
+
+
+            try {
+
+              
+const response = await fetch(url, {
+
+                headers: {
+
+                  'Authorization': `Basic ${credentials}`,
+
+                  'Accept': 'application/json'
+
+                }
+
+              });
+
+
+
+              if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+              const data = await response.json();
+
+              renderKuluTable(data.kulus || []);
+
+              if (playlistLoading) playlistLoading.classList.add('hidden');
+
+
+            } catch (err) {
+
+              console.error(' Failed to load kulus:', err);
+
+              resultDiv.innerHTML = `<p class="text-red-600"> Failed to load videos: ${err.message}</p>`;
+
+            }
+
+          });
+
+        });
+
+      } catch (err) {
+
+        console.error(' Folder fetch error:', err);
+
+        folderContainer.innerHTML = `<p class="text-red-600"> Failed to load folders: ${err.message}</p>`;
+
+      }
+
+    }
+
+
+
+    document.addEventListener('DOMContentLoaded', () => {
+
+      const saved = localStorage.getItem('qumuLogin');
+
+      if (saved) {
+
+        try {
+
+          const { domain, username, password } = JSON.parse(saved);
+
+          if (domain && username && password) {
+
+            showApp();
+
+            fetchFoldersAndShowDropdown(domain, username, password);
+
+            return;
+
+          }
+
+        } catch (e) {
+
+          console.warn('Invalid stored login');
+
+        }
+
+      }
+
+      loginPage.classList.remove('hidden');
+
+      appPage.classList.add('hidden');
+
+    });
+
+
+
+    document.getElementById('saveLogin').addEventListener('click', () => {
+
+      const domain = domainInput.value.trim();
+
+      const username = usernameInput.value.trim();
+
+      const password = passwordInput.value;
+
+
+
+      if (!domain || !username || !password) {
+
+        showToast("Please fill out all login fields.");
+
+        return;
+
+      }
+
+
+
+      localStorage.setItem('qumuLogin', JSON.stringify({ domain, username, password }));
+
+      showApp();
+
+      fetchFoldersAndShowDropdown(domain, username, password);
+
+    });
+
+  
+
+
+
+document.getElementById('refreshResults')?.addEventListener('click', async () => {
+  const saved = JSON.parse(localStorage.getItem('qumuLogin'));
+  const domain = saved.domain.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+  const credentials = btoa(`${saved.username}:${saved.password}`);
+  const playlistSelect = document.getElementById('playlistSelect');
+  const playlistGuid = playlistSelect?.value;
+  if (!playlistGuid) return;
+  const playlistLoading = document.getElementById('playlistLoading');
+  if (playlistLoading) playlistLoading.classList.remove('hidden');
+  try {
+    const response = await fetch(`https://${domain}/api/2.2/rest/playlists/${playlistGuid}/kulus?limit=100`, {
+      headers: {
+        'Authorization': `Basic ${credentials}`,
+        'Accept': 'application/json'
+      }
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    renderKuluTable(data.kulus || []);
+  } catch (err) {
+    console.error('❌ Failed to refresh videos:', err);
+    document.getElementById('result').innerHTML = `<p class="text-red-600">❌ Failed to refresh videos: ${err.message}</p>`;
+  } finally {
+    if (playlistLoading) playlistLoading.classList.add('hidden');
+  }
+});
+function renderKuluTable(kulus) {
+
+  if (!Array.isArray(kulus) || kulus.length === 0) {
+
+    resultDiv.innerHTML = '<p class="text-gray-600 italic mt-4">No videos found in this playlist.</p>';
+
+    return;
+
+  }
+
+
+
+  const rows = kulus.map(kulu => {
+
+    const descMeta = (kulu.metadata || []).find(m => m.title === "Description");
+
+    const tagsMeta = (kulu.metadata || []).find(m => m.title === "Tags");
+
+    return `
+
+      <tr class="border-t">
+
+        <td class="p-2"><textarea rows="2" data-type="Title" data-guid="${kulu.guid}" class="w-full border p-1 rounded">${kulu.title || ""}</textarea></td>
+
+        <td class="p-2">
+
+          <textarea rows="2" data-type="Description" data-guid="${kulu.guid}" data-metaguid="${descMeta?.guid || ''}" class="w-full border p-1 rounded">${descMeta?.value || ''}</textarea>
+
+        </td>
+
+        
+<td class="p-2 w-[300px] max-w-[300px]"><div class="overflow-x-auto whitespace-nowrap flex flex-wrap gap-1 mb-1">
+    ${
+      Array.isArray(tagsMeta?.value)
+        ? tagsMeta.value.map(tag => `<span class='bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs'>${tag}</span>`).join('')
+        : ''
+    }
+  </div>
+  <input type="text" style="max-width: 250px;" data-type="Tags" data-guid="${kulu.guid}" data-metaguid="${tagsMeta?.guid || ''}" class="w-full border p-1 rounded" value="${Array.isArray(tagsMeta?.value) ? tagsMeta.value.join(', ') : ''}" />
+</td>
+
+
+        <td class="p-2 w-20"> <button class="save-meta bg-blue-600 text-white px-3 py-1 rounded" data-guid="${kulu.guid}">Save</button>
+
+        </td>
+
+      </tr>
+
+    `;
+
+  }).join('');
+
+
+
+  resultDiv.innerHTML = `
+
+    <div class="bg-white p-4 rounded shadow mt-4 overflow-x-auto">
+
+      
+<h3 class="text-lg font-semibold mb-2"> Videos in Playlist</h3>
+<div class="flex justify-between items-center gap-4 mb-4">
+  <input type="text" id="searchInput" placeholder="Search title or description..." class="border p-2 rounded w-full max-w-md" />
+  <button id="clearSearch" class="bg-gray-300 text-sm text-black px-3 py-1 rounded">Clear</button>
+</div>
+
+
+
+
+<table class="w-full text-left border border-gray-300">
+
+        <thead class="bg-gray-100">
+
+          <tr>
+
+            <th class="p-2 border-r">Title</th>
+
+            <th class="p-2 border-r">Description</th>
+
+            <th class="p-2 border-r">Tags</th>
+
+            <th class="p-2 w-20">Action</th>
+
+          </tr>
+
+        </thead>
+
+        <tbody>${rows}</tbody>
+
+      </table>
+
+    </div>
+
+  `;
+
+
+
+  hookUpMetadataSaveHandlers();
+
+}
+
+
+
+function hookUpMetadataSaveHandlers() {
+
+  document.querySelectorAll('.save-meta').forEach(button => {
+
+    button.addEventListener('click', async () => {
+
+      const guid = button.dataset.guid;
+
+      const saved = JSON.parse(localStorage.getItem('qumuLogin'));
+
+      const domain = saved.domain.trim().replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+      const credentials = btoa(`${saved.username}:${saved.password}`);
+
+
+
+      const descriptionEl = document.querySelector(`textarea[data-guid="${guid}"][data-type="Description"]`);
+
+      const tagsEl = document.querySelector(`input[data-guid="${guid}"][data-type="Tags"]`);
+
+
+
+      const descGuid = descriptionEl?.dataset.metaguid;
+
+      const tagsGuid = tagsEl?.dataset.metaguid;
+
+      const descVal = descriptionEl?.value.trim();
+
+      const tagsVal = tagsEl?.value.split(',').map(t => t.trim()).filter(Boolean);
+
+
+
+      try {
+
+        if (descGuid) {
+
+          await fetch(`https://${domain}/api/2.2/rest/kulus/${guid}/metadata`, {
+
+            method: 'POST',
+
+            headers: {
+
+              'Authorization': `Basic ${credentials}`,
+
+              'Content-Type': 'application/json'
+
+            },
+
+            body: JSON.stringify({
+
+              metadata: {
+
+                guid: descGuid,
+
+                value: descVal
+
+              }
+
+            })
+
+          });
+
+        }
+
+
+
+        if (tagsGuid) {
+
+          await fetch(`https://${domain}/api/2.2/rest/kulus/${guid}/metadata`, {
+
+            method: 'POST',
+
+            headers: {
+
+              'Authorization': `Basic ${credentials}`,
+
+              'Content-Type': 'application/json'
+
+            },
+
+            body: JSON.stringify({
+
+              metadata: {
+
+                guid: tagsGuid,
+
+                value: tagsVal
+
+              }
+
+            })
+
+          });
+
+        }
+
+
+
+        showToast(` Metadata updated for GUID: ${guid}`);
+
+      } catch (err) {
+
+        console.error(err);
+
+        showToast(` Failed to update metadata for GUID: ${guid}\n${err.message}`);
+
+      }
+
+    });
+
+  });
+
+}
+
+
+
+
+
+
+
+let currentKulus = [];
+
+
+
+function renderKuluTable(kulus) {
+
+  currentKulus = kulus;
+
+  renderFilteredTable(kulus);
+
+
+
+  
+  
+  const searchInput = document.getElementById('searchInput');
+  const clearButton = document.getElementById('clearSearch');
+
+  if (searchInput && clearButton) {
+    searchInput.addEventListener('input', () => {
+      const term = searchInput.value.toLowerCase();
+      const filtered = currentKulus.filter(kulu =>
+        (kulu.title || '').toLowerCase().includes(term) ||
+        ((kulu.metadata || []).find(m => m.title === "Description")?.value || '').toLowerCase().includes(term)
+      );
+      renderFilteredTable(filtered);
+    });
+
+    clearButton.addEventListener('click', () => {
+      searchInput.value = '';
+      renderFilteredTable(currentKulus);
+    });
+  }
+
+  hookUpMetadataSaveHandlers();
+}
+
+
+
+
+
+let currentSortField = null;
+let sortAscending = true;
+
+function sortTableBy(field) {
+  if (currentSortField === field) {
+    sortAscending = !sortAscending;
+  } else {
+    currentSortField = field;
+    sortAscending = true;
+  }
+
+  const sorted = [...currentKulus].sort((a, b) => {
+    const aVal = (a[field] || '').toLowerCase();
+    const bVal = (b[field] || '').toLowerCase();
+    return sortAscending ? aVal.localeCompare(bVal) : bVal.localeCompare(aVal);
+  });
+
+  renderFilteredTable(sorted);
+}
+
+
+
+
+function renderFilteredTable(kulus) {
+  const rows = kulus.map(kulu => {
+    const descMeta = (kulu.metadata || []).find(m => m.title === "Description");
+    const tagsMeta = (kulu.metadata || []).find(m => m.title === "Tags");
+    return `
+      <tr class="border-t">
+        <td class="p-2"><textarea rows="2" data-type="Title" data-guid="${kulu.guid}" class="w-full border p-1 rounded">${kulu.title || ""}</textarea></td>
+        <td class="p-2">
+          <textarea rows="2" data-type="Description" data-guid="${kulu.guid}" data-metaguid="${descMeta?.guid || ''}" class="w-full border p-1 rounded">${descMeta?.value || ''}</textarea>
+        </td>
+        
+<td class="p-2 w-[300px] max-w-[300px]"><div class="overflow-x-auto whitespace-nowrap flex flex-wrap gap-1 mb-1">
+    ${
+      Array.isArray(tagsMeta?.value)
+        ? tagsMeta.value.map(tag => `<span class='bg-blue-100 text-blue-800 px-2 py-1 rounded text-xs'>${tag}</span>`).join('')
+        : ''
+    }
+  </div>
+  <input type="text" style="max-width: 250px;" data-type="Tags" data-guid="${kulu.guid}" data-metaguid="${tagsMeta?.guid || ''}" class="w-full border p-1 rounded" value="${Array.isArray(tagsMeta?.value) ? tagsMeta.value.join(', ') : ''}" />
+</td>
+
+        <td class="p-2 w-20"> <button class="save-meta bg-blue-600 text-white px-3 py-1 rounded" data-guid="${kulu.guid}">Save</button>
+        </td>
+      </tr>
+    `;
+  }).join('');
+
+  document.getElementById('result').innerHTML = `
+    <div class="bg-white p-4 rounded shadow mt-4 overflow-x-auto">
+      <table class="w-full text-left border border-gray-300">
+        <thead class="bg-gray-100">
+          <tr>
+            <th class="p-2 border-r cursor-pointer" onclick="sortTableBy('title')">Title </th>
+            <th class="p-2 border-r">Description</th>
+            <th class="p-2 border-r">Tags</th>
+            <th class="p-2 w-20">Action</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  `;
+  document.getElementById('searchUI')?.classList.remove('hidden');
+  hookUpMetadataSaveHandlers();
+}
+
+</script>
+
+
+
+</body>
+
+</html>

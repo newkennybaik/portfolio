@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="12px" height="12px" viewBox="0 0 12 12" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icon_stop@0.0x</title>
+    <g id="v4" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="A02" transform="translate(-444.000000, -207.000000)" fill="#107DB7" fill-rule="nonzero">
+            <g id="pop-up" transform="translate(226.000000, 69.000000)">
+                <g id="test-sound" transform="translate(178.500000, 138.000000)">
+                    <path d="M45.5,0 C42.1860457,0 39.5,2.68604571 39.5,6 C39.5,9.31392 42.1860457,12 45.5,12 C48.81392,12 51.5,9.31392 51.5,6 C51.5,2.68604571 48.81392,0 45.5,0 Z M43.75,3.25 L47.25,3.25 C47.8022847,3.25 48.25,3.69771525 48.25,4.25 L48.25,7.75 C48.25,8.30228475 47.8022847,8.75 47.25,8.75 L43.75,8.75 C43.1977153,8.75 42.75,8.30228475 42.75,7.75 L42.75,4.25 C42.75,3.69771525 43.1977153,3.25 43.75,3.25 Z" id="icon_stop"></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

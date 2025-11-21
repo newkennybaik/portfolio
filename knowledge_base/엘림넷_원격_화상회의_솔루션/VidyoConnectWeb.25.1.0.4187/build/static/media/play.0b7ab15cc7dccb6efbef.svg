@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="53px" height="53px" viewBox="0 0 53 53" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>icon/play</title>
+    <g id="Audio" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="C01" transform="translate(-911.000000, -659.000000)">
+            <g id="Group-4" transform="translate(840.000000, 663.000000)">
+                <g id="Group" transform="translate(75.000000, 0.000000)">
+                    <circle id="Oval" stroke="#FFFFFF" stroke-width="4" fill-opacity="0.3" fill="#0E111D" cx="22.5" cy="22.5" r="24.5"></circle>
+                    <path d="M27.6718002,16.1938713 L35.4673831,27.5282505 C36.4063002,28.8933881 36.0607803,30.7611935 34.6956427,31.7001107 C34.195452,32.0441328 33.6026594,32.2283104 32.9955828,32.2283104 L17.4044172,32.2283104 C15.7475629,32.2283104 14.4044172,30.8851647 14.4044172,29.2283104 C14.4044172,28.6212338 14.5885947,28.0284412 14.9326169,27.5282505 L22.7281998,16.1938713 C23.6671169,14.8287337 25.5349223,14.4832138 26.9000599,15.4221309 C27.2023298,15.6300268 27.4639044,15.8916013 27.6718002,16.1938713 Z" id="Triangle" fill="#FFFFFF" transform="translate(25.200000, 22.414155) rotate(-270.000000) translate(-25.200000, -22.414155) "></path>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

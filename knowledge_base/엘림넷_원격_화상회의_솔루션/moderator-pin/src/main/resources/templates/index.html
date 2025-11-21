@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Moderator PIN Tool</title>
+    <style>
+        body {
+            background-color: #222;
+            color: #eee;
+            font-family: Arial, sans-serif;
+        }
+        h2 {
+            margin-bottom: 20px;
+        }
+        label {
+            margin-right: 8px;
+        }
+        input {
+            margin-right: 8px;
+        }
+        button {
+            margin-right: 8px;
+        }
+        .row {
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+
+<h2>Moderator PIN Tool</h2>
+
+<form method="post" action="/web/pin/create">
+    <div class="row">
+        <label>Username:</label>
+        <input type="text" name="username" required>
+        <label>PIN:</label>
+        <input type="text" name="pin" required>
+        <button type="submit">Create PIN</button>
+    </div>
+</form>
+
+<form method="post" action="/web/pin/remove">
+    <div class="row">
+        <label>Username:</label>
+        <input type="text" name="username" required>
+        <button type="submit">Remove PIN</button>
+    </div>
+</form>
+
+<div class="row">
+    <h3>Result:</h3>
+    <p th:text="${result}"></p>
+</div>
+
+</body>
+</html>

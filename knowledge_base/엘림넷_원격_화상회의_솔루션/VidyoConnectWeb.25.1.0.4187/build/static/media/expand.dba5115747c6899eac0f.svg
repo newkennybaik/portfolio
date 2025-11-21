@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="12px" height="13px" viewBox="0 0 12 13" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 53.2 (72643) - https://sketchapp.com -->
+    <title>Group 2</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd" fill-opacity="0.8">
+        <g id="camera-control/NEW_v2-Copy-2" transform="translate(-192.000000, -7.000000)" fill="#FFFFFF">
+            <g id="camera-control-pad">
+                <g id="header">
+                    <g id="Group-2" transform="translate(189.000000, 4.500000)">
+                        <polygon id="Shape" transform="translate(12.656854, 5.656854) scale(-1, 1) rotate(-135.000000) translate(-12.656854, -5.656854) " points="9.65685425 1.82352092 10.7919894 0.656854249 15.6568542 5.65685425 10.7919894 10.6568542 9.65685425 9.49018758 13.386584 5.65685425"></polygon>
+                        <polygon id="Shape" transform="translate(5.656854, 12.656854) scale(-1, 1) rotate(-315.000000) translate(-5.656854, -12.656854) " points="2.65685425 8.82352092 3.79198938 7.65685425 8.65685425 12.6568542 3.79198938 17.6568542 2.65685425 16.4901876 6.38658398 12.6568542"></polygon>
+                    </g>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="24px" height="24px" viewBox="0 0 24 24" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>light_mode / icons / icon_mail</title>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="light_mode-/-icons-/-icon_mail">
+            <rect id="Rectangle" x="0" y="0" width="24" height="24"></rect>
+            <path d="M5.68434189e-14,4 L5.68434189e-14,20 L24,20 L24,4 L5.68434189e-14,4 L5.68434189e-14,4 Z M12,13 L2,5 L22,5 L12,13 L12,13 Z M1,19 L1,6 L8.19375,11.3239832 L3.9375,16.0219729 L4.0625,16.143525 L8.99375,11.913511 L12,14.1379149 L15.00625,11.913511 L19.9375,16.143525 L20.0625,16.0219729 L15.80625,11.3179056 L23,6 L23,19 L1,19 L1,19 Z" id="Shape" fill="#107DB7"></path>
+        </g>
+    </g>
+</svg>
