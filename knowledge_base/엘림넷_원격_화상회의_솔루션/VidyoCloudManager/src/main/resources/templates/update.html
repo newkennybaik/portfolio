@@ -1,0 +1,2196 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Vidyo Cloud Manager - Update</title>
+
+    <link rel="stylesheet" th:href="@{/main.css}" href="/main.css">
+
+    <style>
+        .nav-menu {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        .nav-item {
+            background: #333;
+            text-align: left;
+            padding: 8px 16px;
+            display: block;
+            color: inherit;
+            text-decoration: none;
+            cursor: pointer;
+            border: none;
+        }
+        .nav-item.active { background: #4caf50; }
+
+        /* side panel footer (version + logo) */
+        .side-panel { display: flex; flex-direction: column; }
+        .nav-menu { flex: 1 1 auto; }
+        .side-footer {
+            padding: 12px 8px 16px 8px;
+            text-align: center;
+            font-size: 12px;
+            color: #cccccc;
+        }
+        .side-version { margin-bottom: -10px; }
+        .side-footer-logo {
+            max-width: 120px;
+            height: auto;
+            display: inline-block;
+            opacity: 0.85;
+        }
+
+        /* Title + user menu */
+        .vu-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .vu-title { font-size: 22px; font-weight: 400; margin: 0; }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+        }
+        .user-name { opacity: 0.8; }
+        .user-menu button {
+            padding: 4px 10px;
+            border-radius: 3px;
+            border: 1px solid #555;
+            background: #333;
+            color: #fff;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .user-menu button:hover { background: #444; }
+
+        /* Target + settings icon */
+        .vu-subtitle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .vu-subtitle { font-size: 14px; color: #cccccc; }
+        .title-settings-btn { background: none; border: none; cursor: pointer; padding: 0; }
+        .title-settings-btn img {
+            width: 22px; height: 22px;
+            filter: brightness(0) invert(1);
+            opacity: 0.7; transition: opacity .15s;
+        }
+        .title-settings-btn img:hover { opacity: 1; }
+
+        /* IP settings popup */
+        .settings-popup {
+            position: fixed; inset: 0;
+            background: rgba(0,0,0,0.55);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        .settings-box {
+            background: #222;
+            padding: 20px;
+            border-radius: 6px;
+            width: 420px;
+            color: #fff;
+        }
+        .settings-box h3 { margin-bottom: 16px; font-size: 18px; }
+        .settings-box textarea {
+            width: 100%;
+            height: 120px;
+            background: #111;
+            color: #fff;
+            border: 1px solid #444;
+            padding: 6px;
+            margin-bottom: 10px;
+            resize: vertical;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .settings-box button {
+            padding: 6px 14px;
+            margin-right: 8px;
+            border-radius: 3px;
+            border: none;
+            cursor: pointer;
+        }
+        .settings-box button:first-of-type { background: #4caf50; color: #fff; }
+        .settings-box button:last-of-type { background: #555; color: #fff; }
+
+        /* renderer area */
+        #renderer { padding: 40px 60px; }
+        .vu-wrapper { max-width: 900px; font-size: 14px; font-weight: 300; }
+
+        /* ---------- Tabs (Updater / SSL Install) ---------- */
+        .main-tabs {
+            display: inline-flex;
+            border-bottom: 1px solid #333;
+            margin-bottom: 10px;
+        }
+        .main-tab {
+            padding: 6px 16px;
+            border: 1px solid #333;
+            border-bottom: none;
+            background: #222;
+            color: #ddd;
+            cursor: pointer;
+            font-size: 13px;
+            margin-right: 4px;
+        }
+        .main-tab.active {
+            background: #4caf50;
+            color: #fff;
+        }
+        .main-tab.disabled {
+            opacity: 0.45;
+            cursor: not-allowed;
+        }
+
+        #upgradeForm, #sslForm {
+            background: #222;
+            border-radius: 4px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+        }
+
+        .vu-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .vu-label {
+            width: 120px;
+            min-width: 120px;
+            font-size: 14px;
+            color: #dddddd;
+        }
+        #upgradeForm input[type="file"], #sslForm input[type="file"] { font-size: 13px; }
+
+        .select-all-row,
+        #serverList .server-row,
+        #sslServerList .server-row {
+            margin-left: 120px;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        .vu-submit-row {
+            margin-top: 14px;
+            margin-left: 120px;
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .vu-submit-row button {
+            font-size: 14px;
+            border: none;
+            border-radius: 3px;
+            padding: 6px 18px;
+            color: #fff;
+            cursor: pointer;
+            background-color: #4caf50;
+            white-space: nowrap;
+        }
+        .vu-submit-row button:hover { background-color: #3f8d40; }
+
+        .vu-wrapper h3 {
+            margin-top: 8px;
+            margin-bottom: 4px;
+            font-size: 15px;
+            font-weight: 400;
+        }
+        .progress-container {
+            width: 320px;
+            height: 14px;
+            border: 1px solid #333;
+            margin-left: 8px;
+            display: inline-block;
+        }
+        .progress-bar { height: 100%; width: 0%; background-color: #4caf50; }
+        .phase { margin-left: 8px; font-size: 12px; }
+
+        #progressArea, #sslProgressArea {
+            max-height: 220px;
+            overflow-y: auto;
+            margin-top: 4px;
+        }
+        #log, #sslLog {
+            width: 100%;
+            height: 200px;
+            margin-top: 8px;
+            white-space: pre;
+            font-family: monospace;
+            border: 1px solid #333;
+            padding: 8px;
+            overflow-y: scroll;
+            background: #111;
+            color: #eee;
+        }
+
+        .vu-status-message {
+            margin-left: 120px;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: #cccccc;
+        }
+        .vu-status-message.ok { color: #8bc34a; }
+        .vu-status-message.error { color: #ff8080; }
+
+        /* usage summary button */
+        .usage-button { background: #555; }
+        .usage-button.active { background: #1976d2; }
+
+        .usage-tabs {
+            display: inline-flex;
+            border-bottom: 1px solid #333;
+            margin-top: 16px;
+            margin-bottom: 8px;
+        }
+        .usage-tab {
+            padding: 6px 16px;
+            border: 1px solid #333;
+            border-bottom: none;
+            background: #222;
+            color: #ddd;
+            cursor: pointer;
+            font-size: 13px;
+        }
+        .usage-tab + .usage-tab { margin-left: 4px; }
+        .usage-tab-active { background: #4caf50; color: #fff; }
+
+        .license-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .license-table th, .license-table td {
+            border: 1px solid #333;
+            padding: 4px 8px;
+            text-align: left;
+        }
+        .license-table thead { background: #1c3d5a; }
+
+        /* usage summary main panel */
+        #insightsUsagePanel { margin-top: 24px; }
+
+        /* Insights config fields */
+        .vu-input-text {
+            width: 320px;
+            padding: 4px 6px;
+            font-size: 13px;
+            background: #111;
+            border: 1px solid #444;
+            color: #fff;
+        }
+        .insights-config-section-title {
+            font-size: 14px;
+            margin-top: 12px;
+            margin-bottom: 6px;
+        }
+        #insightsConfigStatus { margin-left: 120px; margin-top: 4px; }
+
+        .license-portal-title {
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #cccccc;
+        }
+
+        .server-usage-container { margin-top: 18px; }
+        .server-usage-title { font-size: 13px; margin-bottom: 6px; color: #dddddd; }
+
+        /* Stored files select */
+        #storedFileSelect, #sslStoredFileSelect, #sslManageFileSelect {
+            width: 260px;
+            padding: 4px 6px;
+            font-size: 13px;
+            background: #111;
+            border: 1px solid #444;
+            color: #fff;
+        }
+        .stored-file-hint {
+            font-size: 11px;
+            color: #999;
+            margin-left: 120px;
+            margin-top: -6px;
+            margin-bottom: 6px;
+        }
+
+        /* SSL Install mode selector */
+        .mode-row {
+            margin-left: 120px;
+            margin-bottom: 10px;
+            font-size: 13px;
+            color: #ddd;
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+        .mode-row input { transform: translateY(1px); }
+
+        .ssl-mode-panel {
+            border: 1px solid #333;
+            padding: 12px;
+            margin-left: 120px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            background: #1a1a1a;
+        }
+        .ssl-mode-panel .vu-row { margin-bottom: 8px; }
+        .ssl-mode-panel .vu-label { width: 110px; min-width: 110px; }
+
+        .mono {
+            font-family: monospace;
+            font-size: 12px;
+            background: #111;
+            border: 1px solid #333;
+            padding: 6px 8px;
+            border-radius: 3px;
+            color: #ddd;
+        }
+
+        /* ✅ 추가: Generated 영역 가독성 + Copy 버튼 */
+        .mono-pre {
+            white-space: pre-wrap;       /* \n 줄바꿈 반영 */
+            overflow-wrap: anywhere;     /* 긴 문자열도 줄바꿈 */
+            word-break: break-word;
+        }
+        .copy-btn {
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 3px;
+            border: 1px solid #555;
+            background: #333;
+            color: #fff;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .copy-btn:hover { background: #444; }
+    </style>
+</head>
+<body>
+<main>
+    <div class="side-panel">
+        <img class="logo"
+             th:src="@{/vidyoPlatformLogo.png}"
+             src="/vidyoPlatformLogo.png">
+
+        <nav class="nav-menu">
+            <a class="nav-item active" href="#"
+               onclick="switchComponent('portal', this); return false;">VidyoPortal</a>
+            <a class="nav-item" href="#"
+               onclick="switchComponent('router', this); return false;">VidyoRouter</a>
+            <a class="nav-item" href="#"
+               onclick="switchComponent('replay', this); return false;">VidyoReplay</a>
+            <a class="nav-item" href="#"
+               onclick="switchComponent('gateway', this); return false;">VidyoGateway</a>
+            <a class="nav-item" href="#"
+               onclick="switchComponent('event', this); return false;">VidyoEvent</a>
+
+            <button id="usageButton"
+                    type="button"
+                    class="nav-item usage-button"
+                    onclick="openInsightsUsage(this);">
+                Usage Summary
+            </button>
+        </nav>
+
+        <div class="side-footer">
+            <div class="side-version">v25.1.1</div>
+            <img class="side-footer-logo"
+                 src="/enghouseVideo.png"
+                 th:src="@{/enghouseVideo.png}">
+        </div>
+    </div>
+
+    <div class="renderer-container">
+        <div id="renderer">
+            <div class="vu-wrapper">
+
+                <div class="vu-title-row">
+                    <h2 class="vu-title">Vidyo Update Tool</h2>
+                    <div class="user-menu">
+                        <span class="user-name"
+                              th:text="${loginUsername}">admin</span>
+                        <button type="button" onclick="goChangePassword()">
+                            Change Password / Expiry
+                        </button>
+                        <button type="button" onclick="doLogout()">
+                            Logout
+                        </button>
+                    </div>
+                </div>
+
+                <div class="vu-subtitle-row">
+                    <div class="vu-subtitle" id="groupTitle">
+                        Target: VidyoPortal (2 servers)
+                    </div>
+                    <button class="title-settings-btn" id="settingsButton" type="button" onclick="openSettings()">
+                        <img src="/settings.png" th:src="@{/settings.png}">
+                    </button>
+                </div>
+
+                <!-- ===== Main tabs: Updater / SSL Install ===== -->
+                <div class="main-tabs" id="mainTabs">
+                    <button type="button" id="tabUpdater" class="main-tab active" onclick="showMainTab('updater')">Updater</button>
+                    <button type="button" id="tabSSL" class="main-tab" onclick="showMainTab('ssl')">SSL Install</button>
+                </div>
+
+                <!-- =========================
+                     Updater Form
+                     ========================= -->
+                <form id="upgradeForm" enctype="multipart/form-data">
+                    <input type="hidden" id="componentField" name="component" value="portal">
+
+                    <div class="vu-row">
+                        <div class="vu-label">Upload File:</div>
+                        <div>
+                            <input type="file" id="fileInput" name="file">
+                        </div>
+                    </div>
+
+                    <div class="vu-row">
+                        <div class="vu-label">Stored File:</div>
+                        <div>
+                            <select id="storedFileSelect">
+                                <option value="">-- Select stored file --</option>
+                            </select>
+                            <button type="button" style="margin-left:6px;font-size:12px;padding:4px 8px;"
+                                    onclick="reloadStoredFiles()">Reload
+                            </button>
+
+                            <button type="button"
+                                    style="margin-left:6px;font-size:12px;padding:4px 8px;background:#b71c1c;color:#fff;border:none;border-radius:3px;cursor:pointer;"
+                                    onclick="deleteStoredFile()">
+                                Delete File
+                            </button>
+                        </div>
+                    </div>
+                    <div class="stored-file-hint">
+                        * Select a file to start the upgrade.
+                        Selecting a new file will start the upgrade automatically.
+                    </div>
+
+                    <div class="vu-row">
+                        <div class="vu-label">Select Servers:</div>
+                        <div class="select-all-row">
+                            <input type="checkbox" id="selectAll" onclick="toggleAllServers()">
+                            <label for="selectAll"><strong>Select All</strong></label>
+                        </div>
+                    </div>
+
+                    <div id="serverList" class="server-list"></div>
+
+                    <div class="vu-submit-row">
+                        <button type="submit">Start Upgrade</button>
+                    </div>
+                </form>
+
+                <div id="statusMessage" class="vu-status-message"></div>
+
+                <div id="upgradeSection">
+                    <h3>Progress</h3>
+                    <div id="progressArea"></div>
+
+                    <h3>Log</h3>
+                    <div id="log"></div>
+                </div>
+
+                <!-- =========================
+                     SSL Install Section
+                     ========================= -->
+                <div id="sslSection" style="display:none;">
+                    <form id="sslForm" enctype="multipart/form-data">
+
+                        <!-- Mode selector -->
+                        <div class="mode-row">
+                            <label>
+                                <input type="radio" name="sslMode" value="upload" checked onchange="switchSslMode('upload')">
+                                Upload PFX
+                            </label>
+                            <label>
+                                <input type="radio" name="sslMode" value="create" onchange="switchSslMode('create')">
+                                Create PFX from KEY + CRT (fullchain) and Apply
+                            </label>
+                        </div>
+
+                        <!-- Mode A: Upload PFX -->
+                        <div id="sslModeUpload" class="ssl-mode-panel">
+                            <div class="vu-row">
+                                <div class="vu-label">Upload PFX:</div>
+                                <div>
+                                    <input type="file" id="sslFileInput" name="file" accept=".pfx,.p12">
+                                </div>
+                            </div>
+
+                            <div class="vu-row">
+                                <div class="vu-label">Stored PFX:</div>
+                                <div>
+                                    <select id="sslStoredFileSelect">
+                                        <option value="">-- Select stored file --</option>
+                                    </select>
+                                    <button type="button" style="margin-left:6px;font-size:12px;padding:4px 8px;"
+                                            onclick="reloadStoredFiles()">Reload</button>
+                                </div>
+                            </div>
+
+                            <!-- ✅ 관리용: SSL 파일 전체(삭제 대상: pfx/p12/key/crt/pem) -->
+                            <div class="vu-row">
+                                <div class="vu-label">Stored SSL Files:</div>
+                                <div>
+                                    <select id="sslManageFileSelect">
+                                        <option value="">-- Select stored file --</option>
+                                    </select>
+
+                                    <button type="button" style="margin-left:6px;font-size:12px;padding:4px 8px;"
+                                            onclick="reloadStoredFiles()">Reload</button>
+
+                                    <button type="button"
+                                            style="margin-left:6px;font-size:12px;padding:4px 8px;background:#b71c1c;color:#fff;border:none;border-radius:3px;cursor:pointer;"
+                                            onclick="deleteSslStoredFile()">
+                                        Delete File
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="stored-file-hint">
+                                * This list is for file management (PFX/KEY/CRT/PEM). Select one to delete, or delete oldest when nothing is selected.
+                            </div>
+
+                            <div class="vu-row">
+                                <div class="vu-label">PFX Password:</div>
+                                <div>
+                                    <input type="password" id="sslPassword" class="vu-input-text" placeholder="PFX password">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Mode B: Create PFX from KEY+CRT -->
+                        <div id="sslModeCreate" class="ssl-mode-panel" style="display:none;">
+                            <div class="vu-row">
+                                <div class="vu-label">KEY File:</div>
+                                <div>
+                                    <input type="file" id="sslKeyFile" name="keyFile" accept=".key,.pem">
+                                </div>
+                            </div>
+
+                            <div class="vu-row">
+                                <div class="vu-label">CRT File:</div>
+                                <div>
+                                    <input type="file" id="sslCrtFile" name="crtFile" accept=".crt,.pem">
+                                </div>
+                            </div>
+
+                            <div class="vu-row">
+                                <div class="vu-label">Output:</div>
+                                <div class="mono" style="width: 520px;">
+                                    Server will generate PFX and apply SSL.<br>
+                                    Password will be generated automatically and shown below.
+                                </div>
+                            </div>
+
+                            <div class="vu-row">
+                                <div class="vu-label">Generated:</div>
+                                <div style="display:flex; gap:10px; align-items:center;">
+                                    <!-- ✅ 가독성 개선: 줄바꿈/자동개행 적용 -->
+                                    <div class="mono mono-pre" id="generatedInfo" style="min-width:520px;">(not generated yet)</div>
+                                    <!-- ✅ 복사 버튼 복구 -->
+                                    <button type="button" class="copy-btn" onclick="copyGeneratedPassword()">Copy</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Servers -->
+                        <div class="vu-row">
+                            <div class="vu-label">Select Servers:</div>
+                            <div class="select-all-row">
+                                <input type="checkbox" id="sslSelectAll" onclick="toggleAllSslServers()">
+                                <label for="sslSelectAll"><strong>Select All</strong></label>
+                            </div>
+                        </div>
+
+                        <div id="sslServerList" class="server-list"></div>
+
+                        <div class="vu-submit-row">
+                            <button type="submit" id="sslSubmitBtn">Apply SSL</button>
+                            <span class="vu-status-message" style="margin:0;" id="sslHint"></span>
+                        </div>
+                    </form>
+
+                    <div id="sslStatusMessage" class="vu-status-message"></div>
+
+                    <h3>Progress</h3>
+                    <div id="sslProgressArea"></div>
+
+                    <h3>Log</h3>
+                    <div id="sslLog"></div>
+                </div>
+
+                <!-- ===== VidyoInsights Usage Summary panel (hidden by default) ===== -->
+                <div id="insightsUsagePanel" style="display:none;">
+                    <div class="usage-tabs">
+                        <button id="tabConfig"
+                                type="button"
+                                class="usage-tab usage-tab-active"
+                                onclick="showInsightsTab('config');">
+                            Config
+                        </button>
+                        <button id="tabInsightsSummary"
+                                type="button"
+                                class="usage-tab"
+                                onclick="showInsightsTab('summary');">
+                            VidyoInsights Summary
+                        </button>
+                        <button id="tabLicenseSummary"
+                                type="button"
+                                class="usage-tab"
+                                onclick="showInsightsTab('license');">
+                            License Summary
+                        </button>
+                    </div>
+
+                    <div id="insightsConfigView" class="usage-view">
+                        <h4 class="insights-config-section-title">VidyoInsights / AdminService Configuration</h4>
+
+                        <div class="vu-row">
+                            <div class="vu-label">Insights URL</div>
+                            <div>
+                                <input type="text" id="cfgInsightsUrl" class="vu-input-text">
+                            </div>
+                        </div>
+
+                        <div class="vu-row">
+                            <div class="vu-label">Portal Admin Base URL</div>
+                            <div>
+                                <input type="text" id="cfgPortalAdminBaseUrl" class="vu-input-text">
+                            </div>
+                        </div>
+
+                        <div class="vu-row">
+                            <div class="vu-label">Admin Username</div>
+                            <div>
+                                <input type="text" id="cfgAdminUsername" class="vu-input-text">
+                            </div>
+                        </div>
+
+                        <div class="vu-row">
+                            <div class="vu-label">Admin Password</div>
+                            <div>
+                                <input type="password" id="cfgAdminPassword" class="vu-input-text">
+                            </div>
+                        </div>
+
+                        <div class="vu-submit-row">
+                            <button type="button" onclick="saveInsightsConfig()">Save Config</button>
+                        </div>
+
+                        <div id="insightsConfigStatus" class="vu-status-message"></div>
+                    </div>
+
+                    <div id="insightsSummaryView" class="usage-view" style="display:none;">
+                        <p id="insightsSummaryMessage" style="margin-top:8px;"></p>
+                        <div class="vu-submit-row">
+                            <button type="button"
+                                    id="openInsightsButton"
+                                    style="display:none;"
+                                    onclick="openInsightsPage()">
+                                Open VidyoInsights
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="licenseSummaryView" class="usage-view" style="display:none; margin-top:6px;">
+                        <div id="licensePortalTitle" class="license-portal-title"></div>
+
+                        <table id="licenseTable" class="license-table">
+                            <thead>
+                            <tr>
+                                <th style="width:60%;">Feature</th>
+                                <th style="width:40%;">License</th>
+                            </tr>
+                            </thead>
+
+                            <tbody>
+                            <tr>
+                                <td colspan="2">No data.</td>
+                            </tr>
+                            </tbody>
+                        </table>
+
+                        <div class="server-usage-container">
+                            <div class="server-usage-title">[ Server Usage Count ]</div>
+                            <table id="serverUsageTable" class="license-table">
+                                <thead>
+                                <tr>
+                                    <th style="width:60%;">Servers</th>
+                                    <th style="width:40%;">Server Count</th>
+                                </tr>
+                                </thead>
+                                <tbody>
+                                <tr>
+                                    <td colspan="2">No data.</td>
+                                </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <!-- ===== /VidyoInsights Usage Summary panel ===== -->
+
+            </div>
+        </div>
+    </div>
+</main>
+
+<form id="logoutForm" th:action="@{/logout}" method="post" style="display:none"></form>
+
+<div class="settings-popup" id="settingsPopup">
+	<div class="settings-box">
+    	<h3 id="settingsTitle">Component IP Configuration</h3>
+
+    	<div style="margin-bottom:10px;">
+        	<div style="font-size:12px;opacity:.85;margin-bottom:6px;">SSH Port (blank = 22)</div>
+        	<input id="sshPortInput"
+               	type="number"
+               	min="1"
+               	max="65535"
+               	placeholder="22"
+               	style="width:100%;padding:6px;background:#111;color:#fff;border:1px solid #444;border-radius:3px;">
+    	</div>
+
+    	<textarea id="componentIPs"></textarea>
+
+    	<button type="button" onclick="saveSettings()">Save</button>
+    	<button type="button" onclick="closeSettings()">Close</button>
+	</div>
+
+</div>
+
+<script>
+    function goChangePassword() { window.location.href = '/change-password'; }
+    function doLogout() { document.getElementById('logoutForm').submit(); }
+
+    const STORAGE_KEYS = {
+        updaterJobId: 'vu_currentJobId',
+        sslJobId: 'vu_currentSslJobId',
+        lastMainTab: 'vu_lastMainTab',
+        sslMode: 'vu_sslMode',
+
+        // ✅ 추가: 로그 자체도 localStorage에 저장 (탭 이동/새로고침/재접속에도 유지)
+        updaterLog: 'vu_updaterLog',
+        sslLog: 'vu_sslLog'
+    };
+
+    const COMPONENT_LABEL = {
+        portal:   "VidyoPortal",
+        router:   "VidyoRouter",
+        replay:   "VidyoReplay",
+        gateway:  "VidyoGateway",
+        event:    "VidyoEvent",
+    };
+
+    const DEFAULT_COMPONENT_SERVERS = {
+        portal:   ["192.168.0.100", "192.168.0.101"],
+        router:   ["192.168.0.13",  "192.168.0.14"],
+        replay:   ["192.168.0.34",  "192.168.0.35"],
+        gateway:  ["192.168.0.57",  "192.168.0.58"],
+        event:    ["192.168.0.55",  "192.168.0.155"],
+    };
+
+    let componentServers = { portal: [], router: [], replay: [], gateway: [], event: [] };
+    let currentComponent = "portal";
+
+    const serverListDiv  = document.getElementById("serverList");
+    const groupTitle     = document.getElementById("groupTitle");
+    const mainTabs       = document.getElementById("mainTabs");
+
+    const form           = document.getElementById('upgradeForm');
+    const progressArea   = document.getElementById('progressArea');
+    const logDiv         = document.getElementById('log');
+    const statusDiv      = document.getElementById('statusMessage');
+    const componentField = document.getElementById('componentField');
+    const upgradeSection = document.getElementById('upgradeSection');
+    const storedFileSelect = document.getElementById('storedFileSelect');
+
+    // SSL UI refs
+    const sslSection = document.getElementById('sslSection');
+    const sslForm = document.getElementById('sslForm');
+    const sslFileInput = document.getElementById('sslFileInput');
+    const sslStoredFileSelect = document.getElementById('sslStoredFileSelect');
+    const sslManageFileSelect = document.getElementById('sslManageFileSelect');
+    const sslPassword = document.getElementById('sslPassword');
+    const sslServerListDiv = document.getElementById('sslServerList');
+    const sslStatusDiv = document.getElementById('sslStatusMessage');
+    const sslProgressArea = document.getElementById('sslProgressArea');
+    const sslLogDiv = document.getElementById('sslLog');
+    const sslKeyFile = document.getElementById('sslKeyFile');
+    const sslCrtFile = document.getElementById('sslCrtFile');
+    const generatedInfo = document.getElementById('generatedInfo');
+    const sslHint = document.getElementById('sslHint');
+    const sslSubmitBtn = document.getElementById('sslSubmitBtn');
+
+    let currentJobId  = null;
+    let progressTimer = null;
+
+    let currentSslJobId = null;
+    let sslProgressTimer = null;
+
+    let usageMode = false;
+    let insightsUrlCache = null;
+    let portalAdminHost = null;
+    const SERVER_USAGE_TOTAL = 100;
+
+    // SSL mode: upload | create
+    let sslMode = 'upload';
+
+    // ✅ 추가: Generated password copy
+    function copyGeneratedPassword() {
+        const text = (generatedInfo && generatedInfo.textContent) ? generatedInfo.textContent : '';
+        if (!text || text === '(not generated yet)') {
+            alert('Nothing to copy.');
+            return;
+        }
+
+        // 우선 password= 라인만 복사 (없으면 전체 복사)
+        let toCopy = text;
+        const m = text.match(/(?:^|\n)password\s*=\s*([^\n]+)/i);
+        if (m && m[1]) toCopy = m[1].trim();
+
+        copyToClipboard(toCopy)
+            .then(() => alert('Copied.'))
+            .catch(() => {
+                // fallback: execCommand
+                try {
+                    const ta = document.createElement('textarea');
+                    ta.value = toCopy;
+                    ta.style.position = 'fixed';
+                    ta.style.left = '-9999px';
+                    document.body.appendChild(ta);
+                    ta.focus();
+                    ta.select();
+                    const ok = document.execCommand('copy');
+                    document.body.removeChild(ta);
+                    if (ok) alert('Copied.');
+                    else alert('Copy failed.');
+                } catch (e) {
+                    alert('Copy failed.');
+                }
+            });
+    }
+
+    function copyToClipboard(text) {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            return navigator.clipboard.writeText(text);
+        }
+        return Promise.reject(new Error('clipboard api not available'));
+    }
+
+    // ---------- Main Tab switch ----------
+    function showMainTab(tab) {
+        if (usageMode) return;
+
+        localStorage.setItem(STORAGE_KEYS.lastMainTab, tab);
+
+        const tabUpdater = document.getElementById('tabUpdater');
+        const tabSSL = document.getElementById('tabSSL');
+
+        if (tab === 'ssl') {
+            if (tabSSL.classList.contains('disabled')) return;
+
+            tabUpdater.classList.remove('active');
+            tabSSL.classList.add('active');
+
+            // updater 숨기기
+            form.style.display = 'none';
+            upgradeSection.style.display = 'none';
+            statusDiv.style.display = 'none';
+
+            // ssl 보이기
+            sslSection.style.display = 'block';
+
+            // ✅ updater 폴링은 중지하되 jobId/log 저장
+            stopUpdaterPollingOnly();
+
+            renderSslServerList();
+            reloadStoredFiles();
+
+            // ✅ 탭 들어오면 SSL 진행중 복구
+            restoreSslJobIfExists();
+
+        } else {
+            tabSSL.classList.remove('active');
+            tabUpdater.classList.add('active');
+
+            sslSection.style.display = 'none';
+
+            form.style.display = 'block';
+            upgradeSection.style.display = 'block';
+            statusDiv.style.display = '';
+
+            // ✅ SSL 폴링은 중지하되 jobId/log 저장
+            stopSslPollingOnly();
+
+            // ✅ 탭 들어오면 Updater 진행중 복구
+            restoreUpdaterJobIfExists();
+        }
+    }
+
+    function stopUpdaterPollingOnly() {
+        if (progressTimer) { clearInterval(progressTimer); progressTimer = null; }
+        if (currentJobId) localStorage.setItem(STORAGE_KEYS.updaterJobId, String(currentJobId));
+        // ✅ 현재 화면 로그도 저장
+        try {
+            const txt = (logDiv && logDiv.textContent) ? logDiv.textContent : '';
+            localStorage.setItem(STORAGE_KEYS.updaterLog, txt);
+        } catch (e) {}
+    }
+
+    function stopSslPollingOnly() {
+        if (sslProgressTimer) { clearInterval(sslProgressTimer); sslProgressTimer = null; }
+        if (currentSslJobId) localStorage.setItem(STORAGE_KEYS.sslJobId, String(currentSslJobId));
+        localStorage.setItem(STORAGE_KEYS.sslMode, String(sslMode || 'upload'));
+        // ✅ 현재 화면 로그도 저장
+        try {
+            const txt = (sslLogDiv && sslLogDiv.textContent) ? sslLogDiv.textContent : '';
+            localStorage.setItem(STORAGE_KEYS.sslLog, txt);
+        } catch (e) {}
+    }
+
+    // ===== Stored File 표시용: UUID prefix 숨김 =====
+    function displayStoredName(fullName) {
+        if (!fullName) return '';
+        const uuidPrefix = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}[_-]/;
+        if (uuidPrefix.test(fullName)) return fullName.replace(uuidPrefix, '');
+        return fullName;
+    }
+
+    function getSelectedStoredFullName() {
+        return (storedFileSelect && storedFileSelect.value) ? storedFileSelect.value.trim() : '';
+    }
+    function getSelectedSslManageFullName() {
+        return (sslManageFileSelect && sslManageFileSelect.value) ? sslManageFileSelect.value.trim() : '';
+    }
+
+    // ----- show/hide upgrade view -----
+    function setUpgradeViewVisible(visible) {
+        const disp = visible ? 'block' : 'none';
+        if (form)           form.style.display          = disp;
+        if (upgradeSection) upgradeSection.style.display = disp;
+        if (statusDiv)      statusDiv.style.display     = visible ? '' : 'none';
+    }
+
+    // ----- load IP list from DB -----
+    function loadServersFromDb(component) {
+        return fetch('/api/component-config/' + component)
+            .then(res => res.json())
+            .then(data => {
+                const ips = (data.ips && data.ips.length > 0)
+                    ? data.ips
+                    : (DEFAULT_COMPONENT_SERVERS[component] || []);
+                componentServers[component] = ips;
+                updateServerUsageTable();
+            })
+            .catch(err => {
+                console.error('loadServersFromDb error', component, err);
+                componentServers[component] = DEFAULT_COMPONENT_SERVERS[component] || [];
+                updateServerUsageTable();
+            });
+    }
+
+    // ----- render server list -----
+    function renderServerList() {
+        const label   = COMPONENT_LABEL[currentComponent];
+        const servers = componentServers[currentComponent] || [];
+
+        groupTitle.textContent =
+            'Target: ' + label + ' (' + servers.length + ' server' + (servers.length > 1 ? 's' : '') + ')';
+
+        const selectAll = document.getElementById("selectAll");
+        if (selectAll) selectAll.checked = false;
+
+        serverListDiv.innerHTML = "";
+        servers.forEach(ip => {
+            const row  = document.createElement("div");
+            row.className = "server-row";
+
+            const cb   = document.createElement("input");
+            cb.type    = "checkbox";
+            cb.name    = "servers";
+            cb.value   = ip;
+
+            const span = document.createElement("span");
+            span.textContent = ip;
+
+            row.appendChild(cb);
+            row.appendChild(span);
+            serverListDiv.appendChild(row);
+        });
+    }
+
+    // ----- Stored files list -----
+    function reloadStoredFiles() {
+        // updater
+        reloadStoredFilesTo(storedFileSelect, '/api/upload-files', null);
+
+        // ssl install dropdown (pfx only)
+        reloadStoredFilesTo(
+            sslStoredFileSelect,
+            '/api/ssl-files',
+            (name) => {
+                const n = name.toLowerCase();
+                return n.endsWith('.pfx') || n.endsWith('.p12');
+            }
+        );
+
+        // ssl manage dropdown (all ssl related)
+        reloadStoredFilesTo(
+            sslManageFileSelect,
+            '/api/ssl-files',
+            (name) => {
+                const n = name.toLowerCase();
+                return n.endsWith('.pfx') || n.endsWith('.p12') || n.endsWith('.key') || n.endsWith('.crt') || n.endsWith('.pem');
+            }
+        );
+    }
+
+    function reloadStoredFilesTo(selectEl, apiUrl, filterFn) {
+        if (!selectEl) return;
+
+        selectEl.innerHTML = '<option value="">-- Select stored file --</option>';
+
+        fetch(apiUrl)
+            .then(res => {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+            })
+            .then(list => {
+                if (!Array.isArray(list)) return;
+                list.forEach(name => {
+                    if (filterFn && !filterFn(name)) return;
+                    const opt = document.createElement('option');
+                    opt.value = name;
+                    opt.textContent = displayStoredName(name);
+                    selectEl.appendChild(opt);
+                });
+            })
+            .catch(err => console.error('reloadStoredFiles error', err));
+    }
+
+    // ===== Delete Stored File (Updater) =====
+    function deleteStoredFile() {
+        const selected = getSelectedStoredFullName();
+
+        const url = selected
+            ? ('/api/upload-files/' + encodeURIComponent(selected))
+            : '/api/upload-files/oldest';
+
+        const msg = selected
+            ? ('Delete this file?\n\n' + displayStoredName(selected))
+            : ('No file selected.\nDelete the oldest stored file?');
+
+        if (!confirm(msg)) return;
+
+        fetch(url, { method: 'DELETE' })
+            .then(res => {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.text();
+            })
+            .then(() => {
+                if (storedFileSelect) storedFileSelect.value = '';
+                reloadStoredFiles();
+
+                if (statusDiv) {
+                    statusDiv.className = 'vu-status-message ok';
+                    statusDiv.textContent = selected
+                        ? ('Deleted: ' + displayStoredName(selected))
+                        : 'Deleted oldest stored file.';
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                if (statusDiv) {
+                    statusDiv.className = 'vu-status-message error';
+                    statusDiv.textContent = 'Delete failed: ' + err.message;
+                }
+                alert('Delete failed.');
+            });
+    }
+
+    // ===== Delete Stored File (SSL: 선택 삭제 / oldest 삭제) =====
+    function deleteSslStoredFile() {
+        const selected = getSelectedSslManageFullName();
+
+        const url = selected
+            ? ('/api/ssl-files/' + encodeURIComponent(selected))
+            : '/api/ssl-files/oldest';
+
+        const msg = selected
+            ? ('Delete this SSL file?\n\n' + displayStoredName(selected))
+            : ('No file selected.\nDelete the oldest SSL file?');
+
+        if (!confirm(msg)) return;
+
+        fetch(url, { method: 'DELETE' })
+            .then(res => {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.text();
+            })
+            .then(() => {
+                if (sslManageFileSelect) sslManageFileSelect.value = '';
+                if (sslStoredFileSelect) sslStoredFileSelect.value = '';
+                reloadStoredFiles();
+
+                if (sslStatusDiv) {
+                    sslStatusDiv.className = 'vu-status-message ok';
+                    sslStatusDiv.textContent = selected
+                        ? ('Deleted: ' + displayStoredName(selected))
+                        : 'Deleted oldest SSL file.';
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                if (sslStatusDiv) {
+                    sslStatusDiv.className = 'vu-status-message error';
+                    sslStatusDiv.textContent = 'Delete failed: ' + err.message;
+                }
+                alert('Delete failed.');
+            });
+    }
+
+    // ----- enter usage summary mode -----
+    function openInsightsUsage(btn) {
+        usageMode = true;
+
+        if (mainTabs) mainTabs.style.display = 'none';
+        if (sslSection) sslSection.style.display = 'none';
+
+        const settingsBtn = document.getElementById('settingsButton');
+        if (settingsBtn) settingsBtn.style.display = 'none';
+
+        stopUpdaterPollingOnly();
+        stopSslPollingOnly();
+
+        document.querySelectorAll(".nav-item").forEach(a => a.classList.remove("active"));
+        if (btn) btn.classList.add("active");
+
+        setUpgradeViewVisible(false);
+
+        const panel = document.getElementById('insightsUsagePanel');
+        if (panel) panel.style.display = 'block';
+
+        if (groupTitle) groupTitle.textContent = "VidyoInsights Usage Summary";
+
+        loadInsightsUsageConfig();
+        showInsightsTab('config');
+    }
+
+    function exitInsightsUsage() {
+        if (!usageMode) return;
+        usageMode = false;
+
+        const settingsBtn = document.getElementById('settingsButton');
+        if (settingsBtn) settingsBtn.style.display = 'inline-block';
+
+        const panel = document.getElementById('insightsUsagePanel');
+        if (panel) panel.style.display = 'none';
+
+        if (mainTabs) mainTabs.style.display = 'inline-flex';
+
+        setUpgradeViewVisible(true);
+
+        const usageBtn = document.getElementById('usageButton');
+        if (usageBtn) usageBtn.classList.remove('active');
+
+        // 돌아올 때 마지막 탭 복구
+        const lastTab = (localStorage.getItem(STORAGE_KEYS.lastMainTab) || 'updater').trim();
+        showMainTab(lastTab === 'ssl' ? 'ssl' : 'updater');
+        refreshSslTabAvailability();
+    }
+
+    // ----- component switch -----
+    function switchComponent(component, el) {
+        if (usageMode) exitInsightsUsage();
+
+        if (mainTabs) mainTabs.style.display = 'inline-flex';
+
+        if (currentComponent === component) return;
+        currentComponent = component;
+
+        if (componentField) componentField.value = currentComponent;
+
+        document.querySelectorAll(".nav-item").forEach(a => a.classList.remove("active"));
+        if (el) el.classList.add("active");
+
+        progressArea.innerHTML = '';
+        logDiv.textContent = '';
+        // ✅ 컴포넌트 변경 시에는 로그 저장값도 초기화(다른 컴포넌트 로그 섞이는거 방지)
+        localStorage.removeItem(STORAGE_KEYS.updaterLog);
+
+        if (statusDiv) {
+            statusDiv.className = 'vu-status-message';
+            statusDiv.textContent = '';
+        }
+
+        if (sslStatusDiv) {
+            sslStatusDiv.className = 'vu-status-message';
+            sslStatusDiv.textContent = '';
+        }
+        if (sslProgressArea) sslProgressArea.innerHTML = '';
+        if (sslLogDiv) sslLogDiv.textContent = '';
+        localStorage.removeItem(STORAGE_KEYS.sslLog);
+
+        loadServersFromDb(component).then(() => {
+            renderServerList();
+            refreshSslTabAvailability();
+            if (sslSection && sslSection.style.display !== 'none') {
+                renderSslServerList();
+                restoreSslJobIfExists();
+            } else {
+                restoreUpdaterJobIfExists();
+            }
+        });
+    }
+
+    function toggleAllServers() {
+        const checked = document.getElementById("selectAll").checked;
+        document.querySelectorAll("input[name='servers']")
+            .forEach(cb => cb.checked = checked);
+    }
+
+    // ----- IP settings popup -----
+    function openSettings() {
+        const popup    = document.getElementById("settingsPopup");
+        const textarea = document.getElementById("componentIPs");
+        const title    = document.getElementById("settingsTitle");
+
+        const label = COMPONENT_LABEL[currentComponent];
+        title.textContent = label + " IP Configuration";
+
+        const ips = componentServers[currentComponent] || [];
+        textarea.value = ips.join("\n");
+
+        popup.style.display = "flex";
+        loadSshPortToUi(); // ✅ 추가
+
+    }
+
+    function closeSettings() {
+        document.getElementById("settingsPopup").style.display = "none";
+    }
+
+    function parseListFromTextarea() {
+        return document.getElementById("componentIPs").value
+            .split("\n")
+            .map(s => s.trim())
+            .filter(s => s.length > 0);
+    }
+
+    function showStatusMessage(msg, ok) {
+        const isSslVisible = (sslSection && sslSection.style.display !== 'none');
+        const target = isSslVisible ? sslStatusDiv : statusDiv;
+        if (!target) return;
+
+        target.className = ok ? 'vu-status-message ok' : 'vu-status-message error';
+        target.textContent = msg;
+
+        if (target === statusDiv) target.style.display = '';
+        if (target === sslStatusDiv) target.style.display = '';
+    }
+    
+    function saveSettings() {
+        const ips = parseListFromTextarea();
+
+        // ✅ 1) 먼저 SSH 포트 저장
+        saveSshPortFromUi()
+            .then(() => {
+                // ✅ 2) 그 다음 기존 IP 저장 로직 수행
+                return fetch('/api/component-config/' + currentComponent, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ component: currentComponent, ips: ips })
+                });
+            })
+            .then(res => {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+            })
+            .then(data => {
+                componentServers[currentComponent] = data.ips || [];
+                closeSettings();
+                renderServerList();
+                updateServerUsageTable();
+                showStatusMessage('IP / SSH Port configuration has been saved.', true);
+                refreshSslTabAvailability();
+                if (sslSection && sslSection.style.display !== 'none') renderSslServerList();
+            })
+            .catch(err => {
+                console.error(err);
+                showStatusMessage('Failed to save configuration: ' + err.message, false);
+                alert('Failed to save configuration');
+            });
+    }
+
+    // ===============================
+    // Updater submit
+    // ===============================
+    form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        if (!confirm('Start Upgrade now?\nThis action cannot be undone.')) return;
+
+        const fileInput = document.getElementById('fileInput');
+        const checkedServers = Array.from(
+            document.querySelectorAll("input[name='servers']:checked")
+        ).map(cb => cb.value);
+
+        if (checkedServers.length === 0) {
+            alert('Select at least one server.');
+            return;
+        }
+
+        const hasNewFile = fileInput && fileInput.files && fileInput.files.length > 0;
+        const storedName = storedFileSelect && storedFileSelect.value ? storedFileSelect.value.trim() : '';
+
+        if (!hasNewFile && !storedName) {
+            alert('Please select a new file to upload or choose a stored file.');
+            return;
+        }
+
+        if (statusDiv) {
+            statusDiv.className = 'vu-status-message';
+            statusDiv.textContent = hasNewFile
+                ? 'Uploading file and starting upgrade...'
+                : 'Starting upgrade using stored file...';
+        }
+
+        const makePayload = (stored) => ({
+            component: currentComponent,
+            storedName: stored,
+            servers: checkedServers
+        });
+
+        if (hasNewFile) {
+            const fileData = new FormData();
+            fileData.append('file', fileInput.files[0]);
+
+            fetch('/upload-file', { method: 'POST', body: fileData })
+                .then(res => {
+                    if (!res.ok) throw new Error('HTTP ' + res.status + ' (upload-file)');
+                    return res.json();
+                })
+                .then(upload => {
+                    reloadStoredFiles();
+                    const payload = makePayload(upload.storedName);
+
+                    return fetch('/upgrade-from-upload', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                })
+                .then(res => {
+                    if (!res.ok) throw new Error('HTTP ' + res.status + ' (upgrade-from-upload)');
+                    return res.json();
+                })
+                .then(handleUpgradeStarted)
+                .catch(handleUpgradeError);
+
+        } else {
+            const payload = makePayload(storedName);
+
+            fetch('/upgrade-from-upload', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload)
+            })
+                .then(res => {
+                    if (!res.ok) throw new Error('HTTP ' + res.status + ' (upgrade-from-upload)');
+                    return res.json();
+                })
+                .then(handleUpgradeStarted)
+                .catch(handleUpgradeError);
+        }
+    });
+
+    function handleUpgradeStarted(data) {
+        currentJobId = data.jobId;
+        localStorage.setItem(STORAGE_KEYS.updaterJobId, String(currentJobId));
+
+        // ✅ 새 작업 시작이면 이전 로그 저장값 제거
+        localStorage.removeItem(STORAGE_KEYS.updaterLog);
+
+        logDiv.textContent = '';
+        progressArea.innerHTML = '';
+
+        if (statusDiv) {
+            statusDiv.className = 'vu-status-message ok';
+            statusDiv.textContent =
+                'Upgrade job started. Tracking progress... (Job ID: ' + data.jobId + ')';
+        }
+
+        // rows는 서버 체크박스 기반으로 생성
+        const checkedServers = Array.from(
+            document.querySelectorAll("input[name='servers']:checked")
+        ).map(cb => cb.value);
+
+        buildUpdaterProgressRows(checkedServers);
+
+        if (progressTimer) clearInterval(progressTimer);
+        progressTimer = setInterval(fetchProgress, 1000);
+    }
+
+    function buildUpdaterProgressRows(serverIps) {
+        progressArea.innerHTML = '';
+        (serverIps || []).forEach(ip => {
+            const row = document.createElement('div');
+            row.className = 'server-row';
+            row.id = 'row-' + ip;
+
+            const label = document.createElement('span');
+            label.textContent = ip;
+
+            const container = document.createElement('div');
+            container.className = 'progress-container';
+
+            const bar = document.createElement('div');
+            bar.className = 'progress-bar';
+            bar.id = 'bar-' + ip;
+            container.appendChild(bar);
+
+            const phase = document.createElement('span');
+            phase.className = 'phase';
+            phase.id = 'phase-' + ip;
+            phase.textContent = 'WAITING';
+
+            row.appendChild(label);
+            row.appendChild(container);
+            row.appendChild(phase);
+            progressArea.appendChild(row);
+        });
+    }
+
+    function handleUpgradeError(err) {
+        console.error(err);
+        if (statusDiv) {
+            statusDiv.className = 'vu-status-message error';
+            statusDiv.textContent = 'Upgrade start failed: ' + err.message;
+        }
+        alert('Upgrade start failed.');
+    }
+
+    function fetchProgress() {
+        if (!currentJobId) return;
+
+        fetch('/progress/' + currentJobId)
+            .then(res => res.json())
+            .then(data => {
+                if (!data || !data.servers) return;
+
+                let allDone = true;
+                let combinedLog = '';
+
+                // ✅ 만약 restore 상황이면 rows가 없을 수 있으니, 서버 목록으로 다시 그림
+                const serverIps = Object.values(data.servers).map(s => s.ip).filter(Boolean);
+                const hasAnyRow = serverIps.some(ip => document.getElementById('bar-' + ip));
+                if (!hasAnyRow) buildUpdaterProgressRows(serverIps);
+
+                Object.values(data.servers).forEach(s => {
+                    const bar   = document.getElementById('bar-' + s.ip);
+                    const phase = document.getElementById('phase-' + s.ip);
+
+                    if (bar)   bar.style.width   = s.progress + '%';
+                    if (phase) phase.textContent = s.phase + ' (' + s.progress + '%)';
+
+                    combinedLog += '==== ' + s.ip + ' [' + s.phase + '] ====\n'
+                        + (s.log || '') + '\n';
+
+                    if (s.phase !== 'DONE' && s.phase !== 'FAILED') allDone = false;
+                });
+
+                logDiv.textContent = combinedLog;
+
+                // ✅ 로그도 저장 (탭 이동/새로고침에도 유지)
+                try { localStorage.setItem(STORAGE_KEYS.updaterLog, combinedLog); } catch (e) {}
+
+                if (allDone) {
+                    clearInterval(progressTimer);
+                    progressTimer = null;
+                    if (statusDiv) {
+                        statusDiv.className = 'vu-status-message ok';
+                        statusDiv.textContent = 'All server tasks are complete. Check the log.';
+                    }
+                    // ✅ 완료되면 jobId/로그 정리
+                    currentJobId = null;
+                    localStorage.removeItem(STORAGE_KEYS.updaterJobId);
+                    localStorage.removeItem(STORAGE_KEYS.updaterLog);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                if (statusDiv) {
+                    statusDiv.className = 'vu-status-message error';
+                    statusDiv.textContent = 'Failed to fetch progress: ' + err.message;
+                }
+            });
+    }
+
+    function restoreUpdaterJobIfExists() {
+        const saved = (localStorage.getItem(STORAGE_KEYS.updaterJobId) || '').trim();
+        if (!saved) return;
+
+        currentJobId = saved;
+
+        // ✅ 먼저 저장된 로그를 즉시 복구해서 “빈 화면” 방지
+        const savedLog = (localStorage.getItem(STORAGE_KEYS.updaterLog) || '');
+        if (logDiv && savedLog) logDiv.textContent = savedLog;
+
+        if (statusDiv) {
+            statusDiv.className = 'vu-status-message ok';
+            statusDiv.textContent = 'Restored upgrade job. Tracking progress... (Job ID: ' + currentJobId + ')';
+        }
+
+        // 바로 한번 가져와서 rows/log 채우고 polling
+        fetchProgress();
+        if (progressTimer) clearInterval(progressTimer);
+        progressTimer = setInterval(fetchProgress, 1000);
+    }
+
+    // ===============================
+    // SSL Install
+    // ===============================
+    function refreshSslTabAvailability() {
+        const tabSSL = document.getElementById('tabSSL');
+        if (!tabSSL) return;
+
+        const allowedComponents = ['portal', 'router', 'replay', 'gateway', 'event'];
+        const allowed = allowedComponents.includes(currentComponent);
+
+        if (!allowed) {
+            tabSSL.classList.add('disabled');
+            tabSSL.title = 'SSL is not available for this view.';
+            if (sslHint) sslHint.textContent = 'SSL is not available for this view.';
+            if (sslSection && sslSection.style.display !== 'none') showMainTab('updater');
+        } else {
+            tabSSL.classList.remove('disabled');
+            tabSSL.title = '';
+            if (sslHint) sslHint.textContent = '';
+        }
+    }
+
+    function switchSslMode(mode) {
+        sslMode = mode;
+        localStorage.setItem(STORAGE_KEYS.sslMode, String(sslMode));
+
+        const a = document.getElementById('sslModeUpload');
+        const b = document.getElementById('sslModeCreate');
+
+        if (mode === 'create') {
+            if (a) a.style.display = 'none';
+            if (b) b.style.display = 'block';
+            if (sslSubmitBtn) sslSubmitBtn.textContent = 'Create PFX & Apply SSL';
+        } else {
+            if (b) b.style.display = 'none';
+            if (a) a.style.display = 'block';
+            if (sslSubmitBtn) sslSubmitBtn.textContent = 'Apply SSL';
+        }
+
+        if (sslStatusDiv) { sslStatusDiv.className = 'vu-status-message'; sslStatusDiv.textContent = ''; }
+        if (generatedInfo) generatedInfo.textContent = '(not generated yet)';
+    }
+
+    function renderSslServerList() {
+        if (!sslServerListDiv) return;
+
+        const servers = componentServers[currentComponent] || [];
+        const selectAll = document.getElementById("sslSelectAll");
+        if (selectAll) selectAll.checked = false;
+
+        sslServerListDiv.innerHTML = "";
+        servers.forEach(ip => {
+            const row  = document.createElement("div");
+            row.className = "server-row";
+
+            const cb   = document.createElement("input");
+            cb.type    = "checkbox";
+            cb.name    = "sslServers";
+            cb.value   = ip;
+
+            const span = document.createElement("span");
+            span.textContent = ip;
+
+            row.appendChild(cb);
+            row.appendChild(span);
+            sslServerListDiv.appendChild(row);
+        });
+    }
+
+    function toggleAllSslServers() {
+        const checked = document.getElementById("sslSelectAll").checked;
+        document.querySelectorAll("input[name='sslServers']")
+            .forEach(cb => cb.checked = checked);
+    }
+
+    sslForm.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const checkedServers = Array.from(
+            document.querySelectorAll("input[name='sslServers']:checked")
+        ).map(cb => cb.value);
+
+        if (checkedServers.length === 0) {
+            alert('Select at least one server.');
+            return;
+        }
+
+        if (sslMode === 'upload') {
+            if (!confirm('Apply SSL now?\nThis action cannot be undone.')) return;
+
+            const hasNewFile = sslFileInput && sslFileInput.files && sslFileInput.files.length > 0;
+            const storedName = sslStoredFileSelect && sslStoredFileSelect.value ? sslStoredFileSelect.value.trim() : '';
+            const pw = (sslPassword && sslPassword.value) ? sslPassword.value : '';
+
+            if (!pw) {
+                alert('PFX password is required.');
+                return;
+            }
+            if (!hasNewFile && !storedName) {
+                alert('Please upload a PFX or select a stored PFX.');
+                return;
+            }
+
+            if (sslStatusDiv) {
+                sslStatusDiv.className = 'vu-status-message';
+                sslStatusDiv.textContent = hasNewFile
+                    ? 'Uploading PFX and starting SSL apply...'
+                    : 'Starting SSL apply using stored PFX...';
+            }
+
+            const makePayload = (stored) => ({
+                component: currentComponent,
+                storedName: stored,
+                password: pw,
+                servers: checkedServers
+            });
+
+            if (hasNewFile) {
+                const fileData = new FormData();
+                fileData.append('file', sslFileInput.files[0]);
+
+                fetch('/ssl/upload-pfx', { method: 'POST', body: fileData })
+                    .then(res => {
+                        if (!res.ok) throw new Error('HTTP ' + res.status + ' (ssl/upload-pfx)');
+                        return res.json();
+                    })
+                    .then(upload => {
+                        reloadStoredFiles();
+                        const payload = makePayload(upload.storedName);
+
+                        return fetch('/ssl/install-from-upload', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+                    })
+                    .then(res => {
+                        if (!res.ok) throw new Error('HTTP ' + res.status + ' (ssl/install-from-upload)');
+                        return res.json();
+                    })
+                    .then(handleSslStarted)
+                    .catch(handleSslError);
+
+            } else {
+                const payload = makePayload(storedName);
+
+                fetch('/ssl/install-from-upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                })
+                    .then(res => {
+                        if (!res.ok) throw new Error('HTTP ' + res.status + ' (ssl/install-from-upload)');
+                        return res.json();
+                    })
+                    .then(handleSslStarted)
+                    .catch(handleSslError);
+            }
+
+        } else {
+            if (!confirm('Create PFX and apply SSL now?\nThis action cannot be undone.')) return;
+
+            if (!sslKeyFile || !sslKeyFile.files || sslKeyFile.files.length === 0) {
+                alert('KEY file is required.');
+                return;
+            }
+            if (!sslCrtFile || !sslCrtFile.files || sslCrtFile.files.length === 0) {
+                alert('CRT(fullchain) file is required.');
+                return;
+            }
+
+            if (sslStatusDiv) {
+                sslStatusDiv.className = 'vu-status-message';
+                sslStatusDiv.textContent = 'Uploading KEY/CRT, generating PFX, and applying SSL...';
+            }
+
+            const fd = new FormData();
+            fd.append('component', currentComponent);
+            checkedServers.forEach(s => fd.append('servers', s));
+            fd.append('keyFile', sslKeyFile.files[0]);
+            fd.append('crtFile', sslCrtFile.files[0]);
+
+            fetch('/ssl/create-pfx-and-install', { method: 'POST', body: fd })
+                .then(res => {
+                    if (!res.ok) throw new Error('HTTP ' + res.status + ' (ssl/create-pfx-and-install)');
+                    return res.json();
+                })
+                .then(r => {
+                    const text = `storedName=${r.storedName}\npassword=${r.password}\njobId=${r.jobId}`;
+                    if (generatedInfo) generatedInfo.textContent = text;
+
+                    reloadStoredFiles();
+                    handleSslStarted({ jobId: r.jobId });
+                })
+                .catch(handleSslError);
+        }
+    });
+
+    function handleSslStarted(data) {
+        currentSslJobId = data.jobId;
+        localStorage.setItem(STORAGE_KEYS.sslJobId, String(currentSslJobId));
+        localStorage.setItem(STORAGE_KEYS.sslMode, String(sslMode || 'upload'));
+
+        // ✅ 새 작업 시작이면 이전 로그 저장값 제거
+        localStorage.removeItem(STORAGE_KEYS.sslLog);
+
+        sslLogDiv.textContent = '';
+        sslProgressArea.innerHTML = '';
+
+        if (sslStatusDiv) {
+            sslStatusDiv.className = 'vu-status-message ok';
+            sslStatusDiv.textContent =
+                'SSL job started. Tracking progress... (Job ID: ' + data.jobId + ')';
+        }
+
+        const checkedServers = Array.from(
+            document.querySelectorAll("input[name='sslServers']:checked")
+        ).map(cb => cb.value);
+
+        buildSslProgressRows(checkedServers);
+
+        if (sslProgressTimer) clearInterval(sslProgressTimer);
+        sslProgressTimer = setInterval(fetchSslProgress, 1000);
+    }
+
+    function buildSslProgressRows(serverIps) {
+        sslProgressArea.innerHTML = '';
+        (serverIps || []).forEach(ip => {
+            const row = document.createElement('div');
+            row.className = 'server-row';
+
+            const label = document.createElement('span');
+            label.textContent = ip;
+
+            const container = document.createElement('div');
+            container.className = 'progress-container';
+
+            const bar = document.createElement('div');
+            bar.className = 'progress-bar';
+            bar.id = 'ssl-bar-' + ip;
+            container.appendChild(bar);
+
+            const phase = document.createElement('span');
+            phase.className = 'phase';
+            phase.id = 'ssl-phase-' + ip;
+            phase.textContent = 'WAITING';
+
+            row.appendChild(label);
+            row.appendChild(container);
+            row.appendChild(phase);
+            sslProgressArea.appendChild(row);
+        });
+    }
+
+    function handleSslError(err) {
+        console.error(err);
+        if (sslStatusDiv) {
+            sslStatusDiv.className = 'vu-status-message error';
+            sslStatusDiv.textContent = 'SSL start failed: ' + err.message;
+        }
+        alert('SSL start failed.');
+    }
+
+    function fetchSslProgress() {
+        if (!currentSslJobId) return;
+
+        fetch('/ssl/progress/' + currentSslJobId)
+            .then(res => res.json())
+            .then(data => {
+                if (!data || !data.servers) return;
+
+                let allDone = true;
+                let combinedLog = '';
+
+                const serverIps = Object.values(data.servers).map(s => s.ip).filter(Boolean);
+                const hasAnyRow = serverIps.some(ip => document.getElementById('ssl-bar-' + ip));
+                if (!hasAnyRow) buildSslProgressRows(serverIps);
+
+                Object.values(data.servers).forEach(s => {
+                    const bar   = document.getElementById('ssl-bar-' + s.ip);
+                    const phase = document.getElementById('ssl-phase-' + s.ip);
+
+                    if (bar)   bar.style.width   = s.progress + '%';
+                    if (phase) phase.textContent = s.phase + ' (' + s.progress + '%)';
+
+                    combinedLog += '==== ' + s.ip + ' [' + s.phase + '] ====\n'
+                        + (s.log || '') + '\n';
+
+                    if (s.phase !== 'DONE' && s.phase !== 'FAILED') allDone = false;
+                });
+
+                sslLogDiv.textContent = combinedLog;
+
+                // ✅ SSL 로그도 저장
+                try { localStorage.setItem(STORAGE_KEYS.sslLog, combinedLog); } catch (e) {}
+
+                if (allDone) {
+                    clearInterval(sslProgressTimer);
+                    sslProgressTimer = null;
+                    if (sslStatusDiv) {
+                        sslStatusDiv.className = 'vu-status-message ok';
+                        sslStatusDiv.textContent = 'All SSL tasks are complete. Check the log.';
+                    }
+                    currentSslJobId = null;
+                    localStorage.removeItem(STORAGE_KEYS.sslJobId);
+                    localStorage.removeItem(STORAGE_KEYS.sslLog);
+                }
+            })
+            .catch(err => {
+                console.error(err);
+                if (sslStatusDiv) {
+                    sslStatusDiv.className = 'vu-status-message error';
+                    sslStatusDiv.textContent = 'Failed to fetch SSL progress: ' + err.message;
+                }
+            });
+    }
+
+    function restoreSslJobIfExists() {
+        const saved = (localStorage.getItem(STORAGE_KEYS.sslJobId) || '').trim();
+        if (!saved) return;
+
+        const savedMode = (localStorage.getItem(STORAGE_KEYS.sslMode) || 'upload').trim();
+        switchSslMode(savedMode === 'create' ? 'create' : 'upload');
+
+        currentSslJobId = saved;
+
+        // ✅ 먼저 저장된 로그를 즉시 복구
+        const savedLog = (localStorage.getItem(STORAGE_KEYS.sslLog) || '');
+        if (sslLogDiv && savedLog) sslLogDiv.textContent = savedLog;
+
+        if (sslStatusDiv) {
+            sslStatusDiv.className = 'vu-status-message ok';
+            sslStatusDiv.textContent = 'Restored SSL job. Tracking progress... (Job ID: ' + currentSslJobId + ')';
+        }
+
+        fetchSslProgress();
+        if (sslProgressTimer) clearInterval(sslProgressTimer);
+        sslProgressTimer = setInterval(fetchSslProgress, 1000);
+    }
+
+    // ----- Insights tabs (원본 유지) -----
+    function showInsightsTab(tab) {
+        const tabConfig  = document.getElementById('tabConfig');
+        const tabSummary = document.getElementById('tabInsightsSummary');
+        const tabLicense = document.getElementById('tabLicenseSummary');
+
+        const viewConfig  = document.getElementById('insightsConfigView');
+        const viewSummary = document.getElementById('insightsSummaryView');
+        const viewLicense = document.getElementById('licenseSummaryView');
+
+        [tabConfig, tabSummary, tabLicense].forEach(t => t && t.classList.remove('usage-tab-active'));
+        [viewConfig, viewSummary, viewLicense].forEach(v => v && (v.style.display = 'none'));
+
+        if (tab === 'summary') {
+            if (tabSummary) tabSummary.classList.add('usage-tab-active');
+            if (viewSummary) viewSummary.style.display = 'block';
+        } else if (tab === 'license') {
+            if (tabLicense) tabLicense.classList.add('usage-tab-active');
+            if (viewLicense) viewLicense.style.display = 'block';
+            loadLicenseData();
+        } else {
+            if (tabConfig) tabConfig.classList.add('usage-tab-active');
+            if (viewConfig) viewConfig.style.display = 'block';
+        }
+    }
+
+    function loadInsightsUsageConfig() {
+        const msg = document.getElementById('insightsSummaryMessage');
+        const cfgUrlInput   = document.getElementById('cfgInsightsUrl');
+        const cfgBaseInput  = document.getElementById('cfgPortalAdminBaseUrl');
+        const cfgUserInput  = document.getElementById('cfgAdminUsername');
+        const cfgPassInput  = document.getElementById('cfgAdminPassword');
+        const cfgStatus     = document.getElementById('insightsConfigStatus');
+        const openBtn       = document.getElementById('openInsightsButton');
+
+        if (msg) msg.textContent = 'Loading configuration...';
+        if (cfgStatus) { cfgStatus.className = 'vu-status-message'; cfgStatus.textContent = ''; }
+        if (openBtn) openBtn.style.display = 'none';
+        insightsUrlCache = null;
+
+        fetch('/api/insights/config')
+            .then(res => {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+            })
+            .then(cfg => {
+                if (cfgUrlInput)  cfgUrlInput.value  = cfg.insightsUrl || '';
+                if (cfgBaseInput) cfgBaseInput.value = cfg.portalAdminBaseUrl || '';
+                if (cfgUserInput) cfgUserInput.value = cfg.adminUsername || '';
+                if (cfgPassInput) cfgPassInput.value = '';
+
+                if (cfg && cfg.insightsUrl && cfg.insightsUrl.length > 0) {
+                    insightsUrlCache = cfg.insightsUrl;
+                    if (msg) msg.textContent = 'VidyoInsights URL is configured.';
+                    if (openBtn) openBtn.style.display = 'inline-block';
+                } else {
+                    if (msg) msg.textContent = 'VidyoInsights URL is not configured.';
+                }
+
+                portalAdminHost = null;
+                if (cfg && cfg.portalAdminBaseUrl) {
+                    const baseUrl = cfg.portalAdminBaseUrl.trim();
+                    if (baseUrl.length > 0) {
+                        try { portalAdminHost = new URL(baseUrl).hostname; }
+                        catch (e) { portalAdminHost = baseUrl.replace(/^https?:\/\//i, ''); }
+                    }
+                }
+                updateLicensePortalTitle();
+            })
+            .catch(err => { if (msg) msg.textContent = 'Failed to load configuration: ' + err.message; });
+    }
+
+    function saveInsightsConfig() {
+        const cfgUrlInput   = document.getElementById('cfgInsightsUrl');
+        const cfgBaseInput  = document.getElementById('cfgPortalAdminBaseUrl');
+        const cfgUserInput  = document.getElementById('cfgAdminUsername');
+        const cfgPassInput  = document.getElementById('cfgAdminPassword');
+        const cfgStatus     = document.getElementById('insightsConfigStatus');
+
+        const insightsUrl = (cfgUrlInput?.value || '').trim();
+        const baseUrl     = (cfgBaseInput?.value || '').trim();
+        const adminUser   = (cfgUserInput?.value || '').trim();
+        const adminPass   = (cfgPassInput?.value || '');
+
+        if (!baseUrl || !adminUser) {
+            alert('Portal Admin Base URL and Admin Username are required.');
+            return;
+        }
+
+        if (cfgStatus) {
+            cfgStatus.className = 'vu-status-message';
+            cfgStatus.textContent = 'Saving configuration...';
+        }
+
+        const payload = {
+            insightsUrl: insightsUrl,
+            portalAdminBaseUrl: baseUrl,
+            adminUsername: adminUser,
+            adminPassword: adminPass
+        };
+
+        fetch('/api/insights/config', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        })
+            .then(res => {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.text();
+            })
+            .then(() => {
+                if (cfgStatus) {
+                    cfgStatus.className = 'vu-status-message ok';
+                    cfgStatus.textContent = 'Configuration has been saved.';
+                }
+                if (cfgPassInput) cfgPassInput.value = '';
+                loadInsightsUsageConfig();
+            })
+            .catch(err => {
+                console.error(err);
+                if (cfgStatus) {
+                    cfgStatus.className = 'vu-status-message error';
+                    cfgStatus.textContent = 'Failed to save configuration: ' + err.message;
+                }
+                alert('Failed to save Insights configuration');
+            });
+    }
+
+    function openInsightsPage() {
+        if (insightsUrlCache) window.open(insightsUrlCache, '_blank');
+        else alert('VidyoInsights URL is not configured.');
+    }
+
+    function updateLicensePortalTitle() {
+        const titleDiv = document.getElementById('licensePortalTitle');
+        if (!titleDiv) return;
+        titleDiv.textContent = (portalAdminHost && portalAdminHost.length > 0) ? portalAdminHost : '';
+    }
+
+    function loadLicenseData() {
+        const tbody = document.querySelector('#licenseTable tbody');
+        if (!tbody) return;
+
+        tbody.innerHTML = '<tr><td colspan="2">Loading...</td></tr>';
+        updateLicensePortalTitle();
+
+        fetch('/api/insights/license')
+            .then(res => {
+                if (!res.ok) throw new Error('HTTP ' + res.status);
+                return res.json();
+            })
+            .then(list => {
+                if (!Array.isArray(list) || list.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="2">No license information.</td></tr>';
+                    updateServerUsageTable();
+                    return;
+                }
+
+                tbody.innerHTML = '';
+                list.forEach(item => {
+                    const name = item.name ?? '';
+                    const max = item.maxValue;
+                    const cur = item.currentValue;
+
+                    const tr = document.createElement('tr');
+                    const tdFeature = document.createElement('td');
+                    tdFeature.textContent = name;
+
+                    const tdLicense = document.createElement('td');
+
+                    const hasMax = max !== null && max !== undefined && max !== '';
+                    const hasCur = cur !== null && cur !== undefined && cur !== '';
+
+                    const nMax = hasMax ? Number(max) : NaN;
+                    const nCur = hasCur ? Number(cur) : NaN;
+
+                    let text;
+                    if (!isNaN(nCur) && !isNaN(nMax)) text = `${cur}/${max} (Used/Licensed)`;
+                    else if (hasCur && hasMax) text = `${cur} / ${max}`;
+                    else if (hasCur) text = String(cur);
+                    else if (hasMax) text = String(max);
+                    else text = '';
+
+                    tdLicense.textContent = text;
+
+                    tr.appendChild(tdFeature);
+                    tr.appendChild(tdLicense);
+                    tbody.appendChild(tr);
+                });
+
+                updateServerUsageTable();
+            })
+            .catch(err => {
+                tbody.innerHTML = `<tr><td colspan="2">Failed to load license data: ${err.message}</td></tr>`;
+                updateServerUsageTable();
+            });
+    }
+
+    function updateServerUsageTable() {
+        const tbody = document.querySelector('#serverUsageTable tbody');
+        if (!tbody) return;
+
+        const rows = [
+            { label: 'VidyoRouter',  key: 'router'  },
+            { label: 'VidyoReplay',  key: 'replay'  },
+            { label: 'VidyoGateway', key: 'gateway' }
+        ];
+
+        tbody.innerHTML = '';
+        rows.forEach(r => {
+            const ips = componentServers[r.key] || [];
+            const used = ips.length || 0;
+
+            const tr = document.createElement('tr');
+            const tdName = document.createElement('td');
+            tdName.textContent = r.label;
+
+            const tdCount = document.createElement('td');
+            tdCount.textContent = `${used}/${SERVER_USAGE_TOTAL} (Used/Servers)`;
+
+            tr.appendChild(tdName);
+            tr.appendChild(tdCount);
+            tbody.appendChild(tr);
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        if (componentField) componentField.value = currentComponent;
+
+        loadServersFromDb('portal').then(() => renderServerList());
+        ['router', 'replay', 'gateway', 'event'].forEach(c => loadServersFromDb(c));
+
+        reloadStoredFiles();
+
+        // SSL 모드 기본값(저장값 있으면 복구)
+        const savedMode = (localStorage.getItem(STORAGE_KEYS.sslMode) || 'upload').trim();
+        switchSslMode(savedMode === 'create' ? 'create' : 'upload');
+
+        refreshSslTabAvailability();
+
+        // 마지막 탭 복구 (여기서 탭별 restore까지 호출됨)
+        const lastTab = (localStorage.getItem(STORAGE_KEYS.lastMainTab) || 'updater').trim();
+        showMainTab(lastTab === 'ssl' ? 'ssl' : 'updater');
+
+        // ✅ 중복 restore 호출 제거 (여기서 다시 호출하면 타이머/로그 꼬일 수 있음)
+        // restoreUpdaterJobIfExists();
+        // restoreSslJobIfExists();
+    });
+    
+    function loadSshPortToUi() {
+        const el = document.getElementById('sshPortInput');
+        if (!el) return;
+
+        fetch('/api/ssh-port')
+            .then(r => r.json())
+            .then(d => {
+                const p = (d && d.port) ? Number(d.port) : 22;
+                // 22면 비워두고, 22가 아니면 표시
+                el.value = (p && p !== 22) ? String(p) : '';
+            })
+            .catch(() => {
+                el.value = '';
+            });
+    }
+
+    function saveSshPortFromUi() {
+        const el = document.getElementById('sshPortInput');
+        if (!el) return Promise.resolve();
+
+        let p = (el.value || '').trim();
+        let port = 22;
+
+        if (p.length > 0) {
+            const n = Number(p);
+            if (!Number.isInteger(n) || n < 1 || n > 65535) {
+                alert('Invalid SSH port. Use 1~65535.');
+                throw new Error('Invalid SSH port');
+            }
+            port = n;
+        }
+
+        return fetch('/api/ssh-port', {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ port: port })
+        }).then(res => {
+            if (!res.ok) throw new Error('HTTP ' + res.status);
+        });
+    }
+</script>
+
+</body>
+</html>

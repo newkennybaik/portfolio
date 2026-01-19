@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Vidyo Updater</title>
+
+    <style>
+        body {
+            margin: 0;
+            background: #111;
+            color: #eee;
+            font-family: Arial, sans-serif;
+        }
+        .login-wrapper {
+            width: 360px;
+            margin: 120px auto 0 auto;
+            padding: 30px;
+            background: #222;
+            border-radius: 6px;
+        }
+        .logo-box {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo-box img {
+            width: 180px;
+            opacity: 0.9;
+        }
+        h2 {
+            margin-top: 0;
+            text-align: center;
+            font-size: 16px;
+            font-weight: 300;
+            margin-bottom: 20px;
+        }
+        .form-row {
+            margin-bottom: 14px;
+        }
+        .form-row label {
+            display: block;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+        input[type="text"],
+        input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            background: #111;
+            border: 1px solid #444;
+            border-radius: 4px;
+            color: #eee;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background: #4caf50;
+            border: none;
+            color: #fff;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 15px;
+            margin-top: 10px;
+        }
+        button:hover {
+            background: #3f8d40;
+        }
+        .error {
+            margin-top: 10px;
+            padding: 8px;
+            background: #802020;
+            border-left: 4px solid #ff4d4d;
+        }
+
+        /* ===== 로그인 하단 카피라이트 + 로고 ===== */
+        .page-footer {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 12px;
+            color: #cccccc;
+        }
+        .page-footer-logo img {
+            margin-top: 4px;
+            height: 45px; /* 필요하면 조절 */
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-wrapper">
+
+    <!-- 로고 박스 -->
+    <div class="logo-box">
+        <img th:src="@{/vidyoPlatformLogo.png}" alt="Vidyo Cloud Manager Logo">
+    </div>
+
+    <h2>v25.1.1</h2>
+
+    <form th:action="@{/login}" method="post">
+
+        <div class="form-row">
+            <label for="username">Username</label>
+            <input id="username" name="username" type="text" required>
+        </div>
+
+        <div class="form-row">
+            <label for="password">Password</label>
+            <input id="password" name="password" type="password" required>
+        </div>
+
+        <button type="submit">Login</button>
+
+        <div th:if="${error}" class="error" th:text="${error}"></div>
+        <div th:if="${expired}" class="error" th:text="${expired}"></div>
+        <div th:if="${mustChange}" class="error" th:text="${mustChange}"></div>
+
+    </form>
+</div>
+
+<!-- 로그인 페이지 하단 문구 + 로고 -->
+<div class="page-footer">
+    <div>© Vidyo 2008-2026</div>
+    <div class="page-footer-logo">
+        <img th:src="@{/enghouseVideo.png}" alt="Enghouse Video Logo">
+    </div>
+</div>
+
+</body>
+</html>

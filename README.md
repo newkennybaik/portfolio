@@ -51,5 +51,4 @@
 - Tomcat, JVM, Apache, Nginx, VM, NAS Storage, Springboot, Django, Wireshark, BurpSuite, API, Azure, AWS, Mysql, SQLite, Linux Bash, HTML/CSS etc.
 
 ## Bios
-- 몰라. 그냥 열심히 해. 그러든지.
-- 돈 좀 많이주세요.
+- Put yourself in the environments that help you keep a positive vibe.

@@ -27,6 +27,12 @@ This has been written for the purpose of testing and to specify how to use git f
     * git commit -m "test2"         # 변경 사항 저장
     * git remote add origin https://github.com/newkennybaik/portfolio # GitHub 연결인데 이미 clone으로 추가가 되어있을 것임
     * git push -u origin main       # GitHub에 업로드
+	
+	다시 정리하자면 이 명령어만 쓰면 되며, 원격-로컬 시에는 git pull 명령어 하나만.
+	* git status
+    * git add .
+	* git commit -m "msg"
+	* git push origin main
 
 7. Git의 기본 흐름
     * git clone (원격 → 로컬) 원격 저장소(GitHub)에서 로컬로 복제
