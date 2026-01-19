@@ -26,7 +26,7 @@
 - 2010-2012(만18~20세): 직장생활 및 알바.(에너지회사, 현대오일뱅크 건설현장, 맥도날드, 목재소 벌목꾼 등)
 - 2012-2014(만20~22세): 한국 군대 GOP(Joined army for 2 years)
 - 2014-2015(만22~23세): 직장생활 및 알바 (택배랑 삼성조선소 전기 결선팀에서 일함)
-- 2015-2016(만23~24세): 호주 워킹홀리데이 1년. 멜론 농장에서 수박 따고, 청소 회사에서 외노자 신분으로 영어배움. (Stayed in Australia with Working Holiday Visa)
+- 2015-2016(만23~24세): 호주 워킹홀리데이 1년. 멜론 농장에서 멜론 수박 수확, 청소회사 자영업 및 알바. (Stayed in Australia with Working Holiday Visa)
 
 ---------------------여기 아래는 IT 관련 from kicked off my career in IT industry, until now---------------------------
 - 2016-2017(만24~25세): 호주 마틴 컬리지에서 시스템 운영 전문학사 취득(2년제 전문대에 해당), (Acquired Deploma of Information Technologyh Degree in Australia)
