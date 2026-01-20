@@ -1,39 +1,39 @@
 # 프로젝트 구성예시 2
 
-## 1. 세종 서버 작업 내역
+## 1. 서버 작업 내역
 
 ### (1) DNS 서버 NTP 설정
-- NTP 서버: `172.16.105.251`
+- NTP 서버: `<NTP_SERVER_IP>`
 
 ```bash
 vi /etc/chrony/chrony.conf
 ```
 
 ```conf
-allow 172.16.105.0/24
+allow <INTERNAL_NETWORK_RANGE>
 local stratum 10
 ```
 
 ```bash
 timedatectl set-timezone UTC
-date -u 122202172025.00
+date -u <UTC_TIME_VALUE>
 ```
 
-#### Vidyo Event / WebRTC 호스트명 정합성 유지 (분당 환경과 동일하게 구성)
+#### Vidyo Event / WebRTC 호스트명 기존 환경과 동일하게 변경
 ```dns
 ; ========================
 ; Insight / Event / Manager / WebRTC / Admin
 ; ========================
-insight01        IN  A   172.16.105.241
-event01          IN  A   172.16.105.243
-manager01        IN  A   172.16.105.245
-webrtc01         IN  A   172.16.105.247
-admin01          IN  A   172.16.105.249
+<HOST_A>     IN  A   <IP_A>
+<HOST_B>     IN  A   <IP_B>
+<HOST_C>     IN  A   <IP_C>
+<HOST_D>     IN  A   <IP_D>
+<HOST_E>     IN  A   <IP_E>
 ```
 
 ---
 
-### (2) VidyoWebRTC 구성 (172.16.105.247)
+### (2) VidyoWebRTC 구성 (<WEBRTC_SERVER_IP>)
 
 #### 네트워크 설정
 - 설정 파일
@@ -46,35 +46,35 @@ netplan generate && netplan apply
 
 #### Apache SSL 인증서 교체
 ```bash
-mv webrtc.example.com.key wildcard.key
-mv webrtc.example.com.crt wildcard.crt
-mv chainca.crt fullchain.crt
+mv <SSL_KEY_FILE>.key wildcard.key
+mv <SSL_CERT_FILE>.crt wildcard.crt
+mv <CHAIN_CERT>.crt fullchain.crt
 systemctl restart apache2
 ```
 
 #### CORS Policy REST API 호출
 ```bash
 curl -k -X POST \
-  -u super:<REDACTED_PASSWORD> \
+  -u <ADMIN_ID>:<REDACTED> \
   -H "Content-Type: application/json" \
-  -d '{"domain":"webrtc01.example.internal","context":"*"}' \
-  https://portal.example.internal/admin/api/v1/system/tenants/cors
+  -d '{"domain":"<WEBRTC_FQDN>","context":"*"}' \
+  https://<PORTAL_FQDN>/admin/api/v1/system/tenants/cors
 ```
 
 ---
 
 ### (3) Vidyo Cloud Manager 설정 변경
 - 포트: `443`
-- 호스트명: `manager01`
+- 호스트명: `<MANAGER_FQDN>`
 
 ```bash
-vi /etc/nginx/sites-available/manager01-443
+vi /etc/nginx/sites-available/<NGINX_CONF_NAME>
 ```
 
 ```nginx
 server {
     listen 443 ssl;
-    server_name manager01.example.internal;
+    server_name <MANAGER_FQDN>;
 
     ssl_certificate     /etc/nginx/ssl/fullchain.crt;
     ssl_certificate_key /etc/nginx/ssl/wildcard.key;
@@ -106,26 +106,26 @@ server {
 ```
 
 ```bash
-ln -sf /etc/nginx/sites-available/manager01-443 /etc/nginx/sites-enabled/manager01-443
+ln -sf /etc/nginx/sites-available/<NGINX_CONF_NAME> /etc/nginx/sites-enabled/<NGINX_CONF_NAME>
 nginx -t && systemctl reload nginx
 ```
 
 #### 인증서 교체
 ```bash
-mv wildcard.example.com.key wildcard.key
-mv wildcard.example.com.crt fullchain.crt
+mv <SSL_KEY_FILE>.key wildcard.key
+mv <SSL_CERT_FILE>.crt fullchain.crt
 nginx -t && systemctl reload nginx
 ```
 
 ---
 
-### (4) 세종 VidyoInsights 설치 (172.16.105.241)
+### (4) VidyoInsights 설치 (<INSIGHTS_SERVER_IP>)
 
 #### 이미지 업로드 및 인스턴스 생성
 ```bash
-mount /dev/sdc1 ~/usb_mount/
-openstack image create VidyoInsights \
-  --file VidyoInsights.qcow2 \
+mount /dev/<USB_DEVICE> <MOUNT_PATH>
+openstack image create <IMAGE_NAME> \
+  --file <QCOW2_FILE> \
   --disk-format qcow2 \
   --container-format bare \
   --private
@@ -133,7 +133,7 @@ openstack image create VidyoInsights \
 
 #### 기본 설정
 ```bash
-hostnamectl set-hostname VidyoInsights
+hostnamectl set-hostname <INSIGHTS_HOSTNAME>
 nmtui
 reboot
 ```
@@ -141,7 +141,6 @@ reboot
 #### 시간 동기화
 ```bash
 vi /etc/chrony.conf
-# server 172.16.105.251 iburst
 systemctl restart chronyd
 chronyc sources -v
 chronyc tracking
@@ -156,11 +155,11 @@ vi docker-compose.yaml
 ```yaml
 vidyo-insights-app:
   container_name: vidyo-insights-app
-  image: vidyoplatform/vidyo-insights-app:25.1.0.0001
+  image: vidyoplatform/vidyo-insights-app:<VERSION>
   networks:
-    - nesjs-network
+    - <DOCKER_NETWORK>
   extra_hosts:
-    - "insight01.example.internal:172.16.105.241"
+    - "<PORTAL_FQDN>:<PORTAL_IP>"
 ```
 
 ```bash
@@ -168,20 +167,19 @@ vi ./environment/userconfig.env
 ```
 
 ```env
-SERVER_IP=insight01.example.internal
+SERVER_IP=<INSIGHTS_FQDN>
+DEFAULT_SUPER_ADMIN_PASSWORD=<REDACTED>
+PUBLIC_SECRET=<REDACTED>
 
-DEFAULT_SUPER_ADMIN_PASSWORD=<REDACTED_PASSWORD>
-PUBLIC_SECRET=<REDACTED_SECRET>
+INFLUXDB_USER="<DB_USER>"
+INFLUXDB_USER_PASSWORD="<REDACTED>"
+INFLUXDB_ADMIN_USER="<DB_ADMIN>"
+INFLUXDB_ADMIN_PASSWORD="<REDACTED>"
 
-INFLUXDB_USER="telegraf"
-INFLUXDB_USER_PASSWORD="<REDACTED_PASSWORD>"
-INFLUXDB_ADMIN_USER="admin"
-INFLUXDB_ADMIN_PASSWORD="<REDACTED_PASSWORD>"
-
-MYSQL_HOST=db.example.internal
-MYSQL_USER=cdraccess
-MYSQL_PASSWORD=cdraccess2
-MYSQL_DATABASE=portal2
+MYSQL_HOST=<DB_HOST>
+MYSQL_USER=<DB_USER>
+MYSQL_PASSWORD=<REDACTED>
+MYSQL_DATABASE=<DB_NAME>
 
 NODE_TLS_REJECT_UNAUTHORIZED=0
 ```
@@ -191,18 +189,19 @@ docker compose up -d
 ```
 
 #### Super 포털 설정
-- 각 Tenant 별 Custom Parameter 추가
+- 각 tenant 접속
+- Custom Parameter 추가
 
 ```text
 Key: insightServerUrl
-Value: https://insight01.example.internal/loki/loki/api/v1/push
+Value: https://<INSIGHTS_FQDN>/loki/loki/api/v1/push
 ```
 
 ---
 
 ### (5) Vidyo Cloud Manager 인증서 작업
 ```bash
-mv STAR.example.com.crt fullchain.crt
-mv STAR.example.com.key wildcard.key
+mv <WILDCARD_CERT>.crt fullchain.crt
+mv <WILDCARD_CERT>.key wildcard.key
 nginx -t && systemctl reload nginx
 ```
