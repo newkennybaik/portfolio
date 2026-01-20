@@ -2,14 +2,14 @@
 
 ## 자기소개
 
-1. **Name**: 백진규, 白真圭, Jinkyu Baik (English Name: Kenny Baik)  
-2. **Sex**: 남 (Male)  
-3. **Date of Birth**: 1991.11.10 (10th Nov, 1991)  
+1. **이름**: 백진규, 白真圭, Jinkyu Baik (English Name: Kenny Baik)  
+2. **성별**: 남 (Male)  
+3. **생일**: 1991.11.10 (10th Nov, 1991)  
 4. **MBTI**: ESFJ  
-5. **Occupation**: Mail / Antispam System, Technical Support Engineer  
-6. **Nationality**: South Korean  
-7. **Ethnicity**: East Asian  
-8. **Hometown**: 강원도 춘천시 (Chuncheon City, Gangwon Province, South Korea)
+5. **내가 생각하는 나의 전문성**: 테크니컬 시스템 엔지니어
+6. **국적**: 한국 
+7. **인종**: 동북아시아인, 토종 한국인. 
+8. **고향/태어난곳**: 강원도 춘천시
 
 ---
 
