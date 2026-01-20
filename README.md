@@ -1,56 +1,144 @@
 # 🛠 포트폴리오
 
 ## 자기소개
-1. Name: 백진규, 白真圭，Jinkyu Baik (English Name: Kenny Baik)
 
-2. Sex: 남 - Male (Height: 160cm, Weight: 60 kg)
+1. **Name**: 백진규, 白真圭, Jinkyu Baik (English Name: Kenny Baik)  
+2. **Sex**: 남 (Male)  
+3. **Date of Birth**: 1991.11.10 (10th Nov, 1991)  
+4. **MBTI**: ESFJ  
+5. **Occupation**: Mail / Antispam System, Technical Support Engineer  
+6. **Nationality**: South Korean  
+7. **Ethnicity**: East Asian  
+8. **Hometown**: 강원도 춘천시 (Chuncheon City, Gangwon Province, South Korea)
 
-2. Date of Birth: 91.11.10 (10th Nov, 1991)
+---
 
-2. MBTI: ESFJ
+## 가정 배경 (추가)
 
-3. Occupation: Mail/Antispam System, Technical Support Engineer
+- 이혼 가정에서 성장  
+- 보호자와 함께 안정적으로 성장한 환경은 아니었으며, 비교적 이른 시기부터 혼자 생활을 책임지는 구조에서 성장  
+- 이로 인해 환경 변화에 대한 적응력, 현실적인 판단, 독립적인 생활 태도가 자연스럽게 형성됨  
+- 개인사보다는 **현실적인 생존과 문제 해결**에 초점을 두는 성향의 배경이 됨
 
-4. Nationality: South Korean
+---
 
-5. Ethnicity: East Asian
+## 성장 및 이력 배경
 
-6. Hometown: 강원도 춘천시 (Chuncheon City, Gangwon Province, South Korean)
+```text
+--------------------- The journey that I went along from the beginning -----------------------
 
-7. Background:
+- 1991~2001 (만 0~9세)
+  한국에서 태어나 성장 후, 11세에 중국(홍콩)으로 유학
 
-``` bash
----------------------The journey that I went along from the beginning-----------------------
-- 1991-2001(만0~9세): 한국에서 태어나서 11살때 중국(홍콩) 유학 (Born in Korea, moved to China at 9 years old)
-- 2001-2010(만9~18세): 중국소재 홍콩국제학교에서 초중고 졸업. 고등학교 졸업 후, 20살때 한국으로 귀국 (Graduated High school from China, returned back to Korea at 18)
-- 2010-2012(만18~20세): 한국에서 직장생활 및 알바.(에너지회사, 현대오일뱅크 건설현장, 맥도날드, 목재소 벌목꾼 등)
-- 2012-2014(만20~22세): 한국군대 육군병장 만기 전역. (Joined army for 2 years)
-- 2014-2015(만22~23세): 직장생활 및 알바 (택배와 삼성중공업 조선소의 전기결선팀에서 근무.)
-- 2015-2016(만23~24세): 호주 워킹홀리데이 1년. 멜론 농장에서 멜론수박 채종/수확/포장, 청소회사 자영업 및 알바. (Stayed in Australia with Working Holiday Visa)
+- 2001~2010 (만 9~18세)
+  중국 소재 홍콩국제학교에서 초·중·고 졸업
+  고등학교 졸업 후 18세에 한국으로 귀국
 
-※ 청소알바 및 자영업 수익(2015~2019): 실수령되는 순수익 연평균 7000만원정도. (들쑥날쑥했습니다. 5000, 8000, 5000, 6000...)
+- 2010~2012 (만 18~20세)
+  한국에서 직장생활 및 각종 아르바이트
+  (에너지회사, 현대오일뱅크 건설현장, 맥도날드, 목재소 벌목 등)
 
----------------------Career-wise in details---------------------------
-- 2016-2017(만24~25세): 호주 마틴 컬리지에서 시스템 운영 전문학사 취득(2년제 전문대에 해당), (Acquired Deploma of Information Technologyh Degree in Australia)
-- 2016-2019(만25~28세): 찰스 스튜어트 대학에서 IT 시스템 분석 학사 취득 (4년제 대학에 해당) (Acquired Bachelor of Information Technology Degree in Australia)
-- 2020-2021(만28~29세): 말레이시아 소재 일본 기업(후지쯔 계열사)에서 직장생활. IT Helpdesk Engineer로 IT 인프라 관련 업무 담당 (Kicked off my IT career in Malaysia)
-- 2021-now(만29~3Xs): 한국에서 IT 관련 직무 계속 하는중 (년수로 치면 학교 포함 10년, 실 업무기간은 4년)
+- 2012~2014 (만 20~22세)
+  대한민국 육군 병장 만기 전역
 
-한국에서 직무경험:
-1. (만29세)사이버텔브릿지 IT 사업부 주임: MCPTT 무전기 연관 시스템/서버 유지보수 및 통번역 담당, 3개월
-2. (만29~31세)NIT 서비스 네이버웍스 운영 담당: 그룹웨어/API/사내 그룹웨어 운영 담당 (네이버 계열사), 1년 반
-3. (만31세)텔라보스 서비스 지원팀 대리: 보이는 ARS 서비스/서버 유지보수/운영 담당, 3개월
-4. (만31~33세)퀄리티아 운영지원 대리: 메일/안티스팸 서비스/서버 유지보수 담당, 1년 9개월 됨 (이것도 경력인지는 모르겠으나, 효성ITX에서 요기요 고객센터 CS 전산 매니저로 주말근무함. 1년 2개월 근무 후 퇴사. 주 7일 근무.)
-5. (만33~34세)엘림넷 UC솔루션팀 매니저: 원격 화상회의 시스템 엔지니어 / PM, 7개월 근무 후 퇴사.
+- 2014~2015 (만 22~23세)
+  한국에서 직장생활 및 아르바이트
+  (택배, 삼성중공업 조선소 전기결선팀)
 
+- 2015~2016 (만 23~24세)
+  호주 워킹홀리데이 1년
+  멜론 농장에서 채종/수확/포장,
+  청소회사 자영업 및 아르바이트
+
+※ 청소 알바 및 자영업 수익 (2015~2019)
+   연평균 실수령 순수익 약 7,000~10,000만 원 (연도별 편차 있음. 실수령 주급: 1500~2000불 사이.)
+
+--------------------- Career-wise in details ---------------------------
+
+- 2016~2017 (만 24~25세)
+  호주 Martin College
+  시스템 운영 전문학사 취득
+  (Diploma of Information Technology)
+
+- 2016~2019 (만 25~28세)
+  호주 Charles Sturt University
+  IT 시스템 분석 학사 취득
+  (Bachelor of Information Technology)
+
+- 2020~2021 (만 28~29세)
+  말레이시아 소재 일본계 기업 (후지쯔 계열)
+  IT Helpdesk Engineer
+  → IT 인프라 커리어 시작
+
+- 2021~현재 (만 29세 이후)
+  한국에서 IT 직무 지속 수행
+  (학업 포함 IT 경력 약 10년,
+   실무 경력 약 4년)
 ```
 
-8. Lanaguages: Korean & Chinese (Mother Tongue), English (Fluent Level), Japanese (Still working on it)
+---
 
-9. Programming Languages: Java & Python (Comparatively good at it...but needs to work on it)
+## 한국 내 직무 경험
 
-10. Specialties: OS/인프라, 메일/그룹웨어 연관 솔루션 및 그 외 IT 개발 분야 전문. (OS, Infrastructures, and dedicated mail/antispam solution, possessed basic concept of all other IT relevant knowledges)
-- Openstack, VMware, Docker, Tomcat, JVM, Apache, Nginx, VM, NAS Storage, Springboot, Django, Wireshark, BurpSuite, API, Azure, AWS, Mysql, SQLite, Linux Bash, HTML/CSS etc.
+1. **사이버텔브릿지**  
+   IT 사업부 주임  
+   MCPTT 무전기 연관 시스템/서버 유지보수 및 통번역 담당 (3개월)
+
+2. **NIT 서비스 (네이버웍스 운영)**  
+   그룹웨어 / API / 사내 그룹웨어 운영 담당  
+   (네이버 계열사, 1년 6개월)
+
+3. **텔라보스**  
+   서비스 지원팀 대리  
+   보이는 ARS 서비스 / 서버 유지보수 및 운영 (3개월)
+
+4. **퀄리티아**  
+   운영지원 대리  
+   메일 / 안티스팸 서비스 및 서버 유지보수 담당 (1년 9개월)  
+   ※ 효성ITX 요기요 고객센터 CS 전산 매니저 주말 근무 병행
+   (1년 2개월 근무)
+
+5. **엘림넷**  
+   UC 솔루션팀 매니저  
+   원격 화상회의 시스템 엔지니어 / PM  
+   (7개월 근무 후 퇴사)
+
+---
+
+## 언어
+
+- Korean & Chinese: Mother Tongue 수준  
+- English: Fluent (업무 가능)  
+- Japanese: 학습 중
+
+---
+
+## 프로그래밍 언어
+
+- Java  
+- Python  
+  (비교적 익숙하나 지속적으로 학습 중)
+
+---
+
+## 전문 분야 및 기술 스택
+
+- OS / Infrastructure 중심
+- 메일 / 그룹웨어 / 안티스팸 솔루션
+- 전반적인 IT 시스템 구조 이해 보유
+
+**기술 경험**
+- OpenStack, VMware, Docker
+- Tomcat, JVM, Apache, Nginx
+- VM, NAS Storage
+- Spring Boot, Django
+- Wireshark, BurpSuite
+- API, Azure, AWS
+- MySQL, SQLite
+- Linux Bash, HTML/CSS 등
+
+---
 
 ## Bios
-- Put yourself in the environments that help you keep a positive vibe.
+
+- *Put yourself in the environments that help you keep a positive vibe.*
