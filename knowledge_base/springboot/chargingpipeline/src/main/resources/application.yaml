@@ -1,0 +1,30 @@
+server:
+  port: 8080
+
+app:
+  infra-ip: 192.168.136.129
+  kafka:
+    topic: charging-events
+
+spring:
+  kafka:
+    bootstrap-servers: ${app.infra-ip}:9092
+
+    producer:
+      acks: all
+      retries: 3
+      properties:
+        enable.idempotence: true
+        max.in.flight.requests.per.connection: 5
+
+    consumer:
+      group-id: charging-events-consumer
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+
+    listener:
+      ack-mode: manual_immediate
+
+  data:
+    mongodb:
+      uri: mongodb://${app.infra-ip}:27017/pipeline
